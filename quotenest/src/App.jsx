@@ -40,7 +40,8 @@ function App() {
     }
   }
 
-  const handleUpdate = (id, newTitle) => {
+  const handleUpdate = (id, newTitle, isShelf) => {
+    console.log("Triggered")
     if (isShelf) {
       setShelves((shelf) =>
         shelf.map((item) =>
@@ -56,9 +57,9 @@ function App() {
     }
   };
 
-  const handleKeyPress = (e, id) => {
+  const handleKeyPress = (e, id, isShelf) => {
     if (e.key === "Enter") {
-      handleUpdate(id, e.target.value)
+      handleUpdate(id, e.target.value, isShelf)
     }
   }
 
@@ -83,37 +84,65 @@ function App() {
       />
       <button onClick={() => { isShelf = true; handleAdd() }}>Add a shelf</button>
       <button onClick={() => { isShelf = false; handleAdd() }}>Add a list</button>
-     
+
       <div>
         <h4>Shelves</h4>
         {shelves.length > 0 ? (
           <div>
-            {shelves.map((item) => (
-              <ul>
+            <ul>
+              {shelves.map((item) => (
                 <li key={item.id}>
-                  {item.title}
-                  <button onClick={() => { isShelf = true; handleDelete(item.id); }}>Delete</button>
+                  {item.isEditing ? (
+                    <div>
+                      <input
+                        type="text"
+                        defaultValue={item.title}
+                        onKeyDown={(e) => handleKeyPress(e, item.id, isShelf=true)}
+                        autoFocus
+                      />
+                    </div>
+                  ) : (
+                    <>
+                      {item.title}
+                      <button onClick={() => { isShelf = true; handleDelete(item.id); }}>Delete</button>
+                      <button onClick={() => {isShelf = true; handleEdit(item.id)}}>Edit</button>
+                    </>
+                  )}
                 </li>
-              </ul>
-            ))}
+              ))}
+            </ul>
           </div>
         ) : (
           <span>No shelves created yet.</span>
         )}
       </div>
-     
+
       <div>
         <h4>Standalone Lists</h4>
         {lists.length > 0 ? (
           <div>
-            {lists.map((item) => (
-              <ul>
+            <ul>
+              {lists.map((item) => (
                 <li key={item.id}>
-                  {item.title}
-                  <button onClick={() => { isShelf = false; handleDelete(item.id); }}>Delete</button>
+                  {item.isEditing ? (
+                    <div>
+                      <input
+                        type="text"
+                        defaultValue={item.title}
+                        onKeyDown={(e) => handleKeyPress(e, item.id, isShelf=false)}
+                        autoFocus
+                      />
+                    </div>
+                  ) : (
+                    <>
+                      {item.title}
+                      <button onClick={() => { isShelf = false; handleDelete(item.id); }}>Delete</button>
+                      <button onClick={() => {isShelf = false; handleEdit(item.id)}}>Edit</button>
+                    </>
+                  )}
                 </li>
-              </ul>
-            ))}
+              ))}
+            </ul>
           </div>
         ) : (
           <span>No standalone lists created yet.</span>

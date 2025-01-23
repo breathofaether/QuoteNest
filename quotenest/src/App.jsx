@@ -6,6 +6,9 @@ function App() {
   const [shelves, setShelves] = useState([])
   const [lists, setLists] = useState([])
   const [text, setText] = useState('')
+  const [selectedItemId, setSelectedItemId] = useState(null);
+  const [nestedQuote, setNestedQuote] = useState("")
+  const [pageNo, setPageNo] = useState('')
 
   let isShelf = true
 
@@ -23,7 +26,8 @@ function App() {
         const list = {
           id: Date.now(),
           title: text,
-          isEditing: false
+          isEditing: false,
+          quotes: [],
         }
         setLists([...lists, list])
         setText('')
@@ -71,6 +75,25 @@ function App() {
     }
   }
 
+  const openModal = (id) => {
+    setSelectedItemId(id);
+  }
+
+  const closeModal = () => {
+    setSelectedItemId(null)
+    setNestedQuote("");
+  }
+
+  const addNestedQuote = () => {
+    if (nestedQuote.trim() === "") return;
+    setLists((prevLists) =>
+      prevLists.map((item) => item.id === selectedItemId ? {
+        ...item, quotes: [...item.quotes, { id: Date.now(), text: nestedQuote, page: pageNo }]
+      } : item))
+      setNestedQuote("")
+      setPageNo("")
+  }
+
   return (
     <div>
       <h1>
@@ -97,15 +120,15 @@ function App() {
                       <input
                         type="text"
                         defaultValue={item.title}
-                        onKeyDown={(e) => handleKeyPress(e, item.id, isShelf=true)}
+                        onKeyDown={(e) => handleKeyPress(e, item.id, isShelf = true)}
                         autoFocus
                       />
                     </div>
                   ) : (
                     <>
-                      {item.title}
+                      <span>{item.title}</span>
                       <button onClick={() => { isShelf = true; handleDelete(item.id); }}>Delete</button>
-                      <button onClick={() => {isShelf = true; handleEdit(item.id)}}>Edit</button>
+                      <button onClick={() => { isShelf = true; handleEdit(item.id) }}>Edit</button>
                     </>
                   )}
                 </li>
@@ -129,15 +152,44 @@ function App() {
                       <input
                         type="text"
                         defaultValue={item.title}
-                        onKeyDown={(e) => handleKeyPress(e, item.id, isShelf=false)}
+                        onKeyDown={(e) => handleKeyPress(e, item.id, isShelf = false)}
                         autoFocus
                       />
                     </div>
                   ) : (
                     <>
-                      {item.title}
+                      <span onClick={() => openModal(item.id)}>{item.title}</span>
+                      {selectedItemId && (
+                        <div>
+                          <h3>{lists.find((item) => item.id === selectedItemId).title}</h3>
+                          <ul>
+                            {lists.find((item) => item.id === selectedItemId)
+                              .quotes.map((quote) => (
+                                <li key={quote.id}>{quote.text} (p{quote.page})</li>
+                              ))}
+                          </ul>
+                          <form>
+                            <input
+                              type="text"
+                              value={nestedQuote}
+                              onChange={(e) => setNestedQuote(e.target.value)}
+                              placeholder="Add notes here"
+                              required
+                            />
+                            <input
+                              type="text"
+                              value={pageNo}
+                              onChange={(e) => setPageNo(e.target.value)}
+                              placeholder="Add page number here"
+                            />
+                          </form>
+                          <button onClick={addNestedQuote}>Add</button>
+                          <button onClick={closeModal}>Close</button>
+                        </div>
+                      )}
+
                       <button onClick={() => { isShelf = false; handleDelete(item.id); }}>Delete</button>
-                      <button onClick={() => {isShelf = false; handleEdit(item.id)}}>Edit</button>
+                      <button onClick={() => { isShelf = false; handleEdit(item.id) }}>Edit</button>
                     </>
                   )}
                 </li>

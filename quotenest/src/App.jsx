@@ -1,206 +1,136 @@
 import React, { useState } from "react"
 import '@mantine/core/styles.css';
-import { MantineProvider, Button, Container, Group, Text } from '@mantine/core';
+
+import {
+  MantineProvider,
+  Button,
+  TextInput,
+  Space,
+  Accordion,
+  Title,
+  Center,
+  Card,
+  List
+} from "@mantine/core";
+
 
 function App() {
-  const [shelves, setShelves] = useState([])
   const [lists, setLists] = useState([])
-  const [text, setText] = useState('')
-  const [selectedItemId, setSelectedItemId] = useState(null);
-  const [nestedQuote, setNestedQuote] = useState("")
-  const [pageNo, setPageNo] = useState('')
-
-  let isShelf = true
+  const [title, setTitle] = useState("")
+  const [text, setText] = useState("")
+  const [pageNo, setPageNo] = useState("")
+  const [filteredLists, setFilteredLists] = useState([]);
 
   const handleAdd = () => {
-    if (text.trim()) {
-      if (isShelf) {
-        const shelf = {
+    if (title.trim() === "" || text.trim() === "") return;
+
+    const existingTitle = lists.find((list) => list.title.trim().toLowerCase() === title.trim().toLowerCase());
+
+    if (existingTitle) {
+      const updatedQuotes = [...existingTitle.quotes, { id: Date.now(), description: text, pageNo: pageNo || ". N/A" }];
+      setLists(lists.map((list) => (list.id === existingTitle.id ? { ...list, quotes: updatedQuotes } : list)))
+    } else {
+      setLists([
+        ...lists,
+        {
           id: Date.now(),
-          title: text,
-          isEditing: false
+          title: title,
+          quotes: [{ id: Date.now(), description: text, pageNo: pageNo || ". N/A" }]
         }
-        setShelves([...shelves, shelf])
-        setText('')
-      } else {
-        const list = {
-          id: Date.now(),
-          title: text,
-          isEditing: false,
-          quotes: [],
-        }
-        setLists([...lists, list])
-        setText('')
-      }
+      ])
     }
+
+    setTitle("")
+    setText("")
+    setPageNo("")
   }
 
-  const handleEdit = (id) => {
-    if (isShelf) {
-      setShelves((shelf) => shelf.map((item) => item.id === id ? { ...item, isEditing: true } : item))
-    } else {
-      setLists((list) => list.map((item) => item.id === id ? { ...item, isEditing: true } : item)
-      )
-    }
-  }
+  const handleTitleChange = (event) => {
+    const inputTitle = event.target.value.trim().toLowerCase();
+    setTitle(event.target.value);
 
-  const handleUpdate = (id, newTitle, isShelf) => {
-    console.log("Triggered")
-    if (isShelf) {
-      setShelves((shelf) =>
-        shelf.map((item) =>
-          item.id === id ? { ...item, title: newTitle, isEditing: false } : item
-        )
-      );
+    if (inputTitle === '') {
+      setFilteredLists([]);
     } else {
-      setLists((list) =>
-        list.map((item) =>
-          item.id === id ? { ...item, title: newTitle, isEditing: false } : item
-        )
+      const filtered = lists.filter((list) =>
+        list.title.toLowerCase().includes(inputTitle)
       );
+      setFilteredLists(filtered);
     }
   };
 
-  const handleKeyPress = (e, id, isShelf) => {
-    if (e.key === "Enter") {
-      handleUpdate(id, e.target.value, isShelf)
-    }
-  }
-
-  const handleDelete = (id) => {
-    if (isShelf) {
-      setShelves((prevShelves) => prevShelves.filter((shelf) => shelf.id != id))
-    } else {
-      setLists((prevLists) => prevLists.filter((list) => list.id != id))
-    }
-  }
-
-  const openModal = (id) => {
-    setSelectedItemId(id);
-  }
-
-  const closeModal = () => {
-    setSelectedItemId(null)
-    setNestedQuote("");
-  }
-
-  const addNestedQuote = () => {
-    if (nestedQuote.trim() === "") return;
-    setLists((prevLists) =>
-      prevLists.map((item) => item.id === selectedItemId ? {
-        ...item, quotes: [...item.quotes, { id: Date.now(), text: nestedQuote, page: pageNo }]
-      } : item))
-      setNestedQuote("")
-      setPageNo("")
-  }
+  const items = lists.map((item) => (
+    <Accordion.Item key={item.id} value={item.title}>
+      <Accordion.Control>{item.title}</Accordion.Control>
+      <Accordion.Panel>
+        <List type="ordered">
+          {item.quotes.map((quote) => (
+            <Card key={quote.id}>
+              <List.Item key={quote.id}>
+                {quote.description} (p{quote.pageNo})
+              </List.Item>
+            </Card>
+          ))}
+        </List>
+      </Accordion.Panel>
+    </Accordion.Item>
+  ))
 
   return (
-    <div>
-      <h1>
-        QuoteNest
-      </h1>
-      <input
-        type="text"
-        placeholder="Enter list/shelf name"
-        value={text}
-        onChange={(e) => setText(e.target.value)}
-      />
-      <button onClick={() => { isShelf = true; handleAdd() }}>Add a shelf</button>
-      <button onClick={() => { isShelf = false; handleAdd() }}>Add a list</button>
+    <MantineProvider>
+      <Center>
+        <Title order={1}>QuoteNest</Title>
+      </Center>
+      <Space h="md"></Space>
+      <form>
+        <TextInput
+          value={title}
+          onChange={handleTitleChange}
+          placeholder="Add Bookname here"
+          required />
+        <TextInput
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+          placeholder="Add description here"
+          required />
+        <TextInput
+          value={pageNo}
+          onChange={(e) => setPageNo(e.target.value)}
+          placeholder="Add page number here"
+        />
+      </form>
+      {filteredLists.length > 0 && (
+        <List>
+          {filteredLists.map((list) => (
+            <List.Item key={list.id} onClick={() => { setTitle(list.title); setFilteredLists([]) }}>
+              {list.title}
+            </List.Item>
+          ))}
+        </List>
+      )}
+      <Space h="md"></Space>
+      <Center><Button onClick={handleAdd}>Save</Button></Center>
 
-      <div>
-        <h4>Shelves</h4>
-        {shelves.length > 0 ? (
-          <div>
-            <ul>
-              {shelves.map((item) => (
-                <li key={item.id}>
-                  {item.isEditing ? (
-                    <div>
-                      <input
-                        type="text"
-                        defaultValue={item.title}
-                        onKeyDown={(e) => handleKeyPress(e, item.id, isShelf = true)}
-                        autoFocus
-                      />
-                    </div>
-                  ) : (
-                    <>
-                      <span>{item.title}</span>
-                      <button onClick={() => { isShelf = true; handleDelete(item.id); }}>Delete</button>
-                      <button onClick={() => { isShelf = true; handleEdit(item.id) }}>Edit</button>
-                    </>
-                  )}
-                </li>
-              ))}
-            </ul>
-          </div>
-        ) : (
-          <span>No shelves created yet.</span>
-        )}
-      </div>
+      <Space h="lg"></Space>
 
-      <div>
-        <h4>Standalone Lists</h4>
-        {lists.length > 0 ? (
-          <div>
-            <ul>
-              {lists.map((item) => (
-                <li key={item.id}>
-                  {item.isEditing ? (
-                    <div>
-                      <input
-                        type="text"
-                        defaultValue={item.title}
-                        onKeyDown={(e) => handleKeyPress(e, item.id, isShelf = false)}
-                        autoFocus
-                      />
-                    </div>
-                  ) : (
-                    <>
-                      <span onClick={() => openModal(item.id)}>{item.title}</span>
-                      {selectedItemId && (
-                        <div>
-                          <h3>{lists.find((item) => item.id === selectedItemId).title}</h3>
-                          <ul>
-                            {lists.find((item) => item.id === selectedItemId)
-                              .quotes.map((quote) => (
-                                <li key={quote.id}>{quote.text} (p{quote.page})</li>
-                              ))}
-                          </ul>
-                          <form>
-                            <input
-                              type="text"
-                              value={nestedQuote}
-                              onChange={(e) => setNestedQuote(e.target.value)}
-                              placeholder="Add notes here"
-                              required
-                            />
-                            <input
-                              type="text"
-                              value={pageNo}
-                              onChange={(e) => setPageNo(e.target.value)}
-                              placeholder="Add page number here"
-                            />
-                          </form>
-                          <button onClick={addNestedQuote}>Add</button>
-                          <button onClick={closeModal}>Close</button>
-                        </div>
-                      )}
+      <Center>
+        <Title order={2}>Quotes</Title>
+      </Center>
 
-                      <button onClick={() => { isShelf = false; handleDelete(item.id); }}>Delete</button>
-                      <button onClick={() => { isShelf = false; handleEdit(item.id) }}>Edit</button>
-                    </>
-                  )}
-                </li>
-              ))}
-            </ul>
-          </div>
-        ) : (
-          <span>No standalone lists created yet.</span>
-        )}
-      </div>
-    </div>
+      <Space h="md"></Space>
+
+      <Card>
+        <Accordion defaultValue={"Notes"}>
+          {items.length > 0 ? (
+            <Accordion>
+              {items}
+            </Accordion>
+          ) : (
+            <span>No quotes added yet. Start by adding a quote</span>
+          )}
+        </Accordion>
+      </Card>
+    </MantineProvider>
   )
 }
 

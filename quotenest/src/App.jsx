@@ -1,6 +1,5 @@
-import React, { useEffect, useState } from "react"
+import React, { Fragment, useEffect, useState } from "react"
 import '@mantine/core/styles.css';
-
 import {
   MantineProvider,
   Button,
@@ -13,43 +12,48 @@ import {
   List,
   Autocomplete,
   createTheme,
-  rem
+  rem,
+  ActionIcon,
+  Group,
+  Box
 } from "@mantine/core";
 import { useDebouncedValue } from "@mantine/hooks";
+import { IconTrashFilled } from '@tabler/icons-react'
+
 
 const theme = createTheme({
   colors: {
 
     deepBlue: [
       '#fdf7ee',
-      '#f7eadd', 
-      '#efd1b8', 
-      '#e6b897', 
-      '#dc9f77', 
+      '#f7eadd',
+      '#efd1b8',
+      '#e6b897',
+      '#dc9f77',
       '#d18b63',
       '#c57d5b',
-      '#b06d4f', 
-      '#9c5f46', 
-      '#874f3c', 
+      '#b06d4f',
+      '#9c5f46',
+      '#874f3c',
     ],
 
     blue: [
-      '#f9f5ee', 
-      '#f0e6d8', 
-      '#e0d0b2', 
+      '#f9f5ee',
+      '#f0e6d8',
+      '#e0d0b2',
       '#cfb38c',
-      '#bfa174', 
-      '#ac9163', 
-      '#9b825a', 
-      '#826e4f', 
-      '#725f46', 
-      '#5f4e3c', 
+      '#bfa174',
+      '#ac9163',
+      '#9b825a',
+      '#826e4f',
+      '#725f46',
+      '#5f4e3c',
     ],
   },
 
   shadows: {
     md: '1px 1px 3px rgba(0, 0, 0, .15)',
-    xl: '4px 4px 5px rgba(0, 0, 0, .2)',  
+    xl: '4px 4px 5px rgba(0, 0, 0, .2)',
   },
 
   headings: {
@@ -71,6 +75,7 @@ function App() {
   const [text, setText] = useState("")
   const [pageNo, setPageNo] = useState("")
 
+  {/* Title suggestion filter */ }
   const [debouncedSearch] = useDebouncedValue(title, 1000)
   const titles = lists.map((item) => item.title).filter((title) => title.toLowerCase().includes(debouncedSearch.toLocaleLowerCase()));
 
@@ -103,16 +108,55 @@ function App() {
     setPageNo("")
   }
 
+  const handleDeleteBook = (id) => {
+    setLists((prevList) => prevList.filter((list) => list.id !== id));
+  }
 
+  const handleDeleteQuote = (bookId, quoteId) => {
+    setLists((prevLists) => prevLists.map((list) =>
+      list.id === bookId ? { ...list, quotes: list.quotes.filter((quote) => quote.id !== quoteId) } : list
+    ))
+  }
+
+  {/* List mapping */ }
   const items = lists.map((item) => (
     <Accordion.Item key={item.id} value={item.title}>
-      <Accordion.Control>{item.title}</Accordion.Control>
+      <Box
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center"
+        }}>
+        <Accordion.Control>
+          {item.title}
+        </Accordion.Control>
+        <Button
+          color="red"
+          variant="light"
+          onClick={() => handleDeleteBook(item.id)}
+          compact
+          style={{ marginLeft: "auto" }}
+        >
+          <IconTrashFilled size={14} />
+        </Button>
+      </Box>
       <Accordion.Panel>
         <List type="ordered">
           {item.quotes.map((quote) => (
             <Card key={quote.id}>
               <List.Item key={quote.id}>
-                {quote.description} (p{quote.pageNo})
+                <Box>
+                  <span>{quote.description} (p{quote.pageNo})</span>
+                  <ActionIcon
+                    color="red"
+                    variant="light"
+                    onClick={() => handleDeleteQuote(item.id, quote.id)}
+                    compact
+                    style={{ marginLeft: 8 }} 
+                  >
+                    <IconTrashFilled size={12} />
+                  </ActionIcon>
+                </Box>
               </List.Item>
             </Card>
           ))}

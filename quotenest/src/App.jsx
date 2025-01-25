@@ -1,4 +1,4 @@
-import React, { useState } from "react"
+import React, { useEffect, useState } from "react"
 import '@mantine/core/styles.css';
 
 import {
@@ -10,16 +10,74 @@ import {
   Title,
   Center,
   Card,
-  List
+  List,
+  Autocomplete,
+  createTheme,
+  rem
 } from "@mantine/core";
+import { useDebouncedValue } from "@mantine/hooks";
+
+const theme = createTheme({
+  colors: {
+
+    deepBlue: [
+      '#fdf7ee',
+      '#f7eadd', 
+      '#efd1b8', 
+      '#e6b897', 
+      '#dc9f77', 
+      '#d18b63',
+      '#c57d5b',
+      '#b06d4f', 
+      '#9c5f46', 
+      '#874f3c', 
+    ],
+
+    blue: [
+      '#f9f5ee', 
+      '#f0e6d8', 
+      '#e0d0b2', 
+      '#cfb38c',
+      '#bfa174', 
+      '#ac9163', 
+      '#9b825a', 
+      '#826e4f', 
+      '#725f46', 
+      '#5f4e3c', 
+    ],
+  },
+
+  shadows: {
+    md: '1px 1px 3px rgba(0, 0, 0, .15)',
+    xl: '4px 4px 5px rgba(0, 0, 0, .2)',  
+  },
+
+  headings: {
+    fontFamily: 'Roboto, sans-serif',
+    sizes: {
+      h1: { fontSize: rem(36) },
+    },
+  },
+});
+
 
 
 function App() {
-  const [lists, setLists] = useState([])
+  const [lists, setLists] = useState(() => {
+    const storedLists = localStorage.getItem("lists");
+    return storedLists ? JSON.parse(storedLists) : []
+  })
   const [title, setTitle] = useState("")
   const [text, setText] = useState("")
   const [pageNo, setPageNo] = useState("")
-  const [filteredLists, setFilteredLists] = useState([]);
+
+  const [debouncedSearch] = useDebouncedValue(title, 1000)
+  const titles = lists.map((item) => item.title).filter((title) => title.toLowerCase().includes(debouncedSearch.toLocaleLowerCase()));
+
+
+  useEffect(() => {
+    localStorage.setItem("lists", JSON.stringify(lists))
+  }, [lists])
 
   const handleAdd = () => {
     if (title.trim() === "" || text.trim() === "") return;
@@ -45,19 +103,6 @@ function App() {
     setPageNo("")
   }
 
-  const handleTitleChange = (event) => {
-    const inputTitle = event.target.value.trim().toLowerCase();
-    setTitle(event.target.value);
-
-    if (inputTitle === '') {
-      setFilteredLists([]);
-    } else {
-      const filtered = lists.filter((list) =>
-        list.title.toLowerCase().includes(inputTitle)
-      );
-      setFilteredLists(filtered);
-    }
-  };
 
   const items = lists.map((item) => (
     <Accordion.Item key={item.id} value={item.title}>
@@ -77,16 +122,17 @@ function App() {
   ))
 
   return (
-    <MantineProvider>
+    <MantineProvider theme={theme}>
       <Center>
-        <Title order={1}>QuoteNest</Title>
+        <h1>QuoteNest</h1>
       </Center>
       <Space h="md"></Space>
       <form>
-        <TextInput
-          value={title}
-          onChange={handleTitleChange}
+        <Autocomplete
           placeholder="Add Bookname here"
+          value={title}
+          data={titles}
+          onChange={setTitle}
           required />
         <TextInput
           value={text}
@@ -99,15 +145,7 @@ function App() {
           placeholder="Add page number here"
         />
       </form>
-      {filteredLists.length > 0 && (
-        <List>
-          {filteredLists.map((list) => (
-            <List.Item key={list.id} onClick={() => { setTitle(list.title); setFilteredLists([]) }}>
-              {list.title}
-            </List.Item>
-          ))}
-        </List>
-      )}
+
       <Space h="md"></Space>
       <Center><Button onClick={handleAdd}>Save</Button></Center>
 

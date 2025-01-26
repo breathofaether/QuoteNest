@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react"
 import '@mantine/core/styles.css';
+import '@mantine/notifications/styles.css';
 import {
   MantineProvider,
   Button,
@@ -17,11 +18,11 @@ import {
   Modal,
   Textarea,
   HoverCard,
-  Text
+  Text,
+  Container,
 } from "@mantine/core";
 import { useDebouncedValue, useDisclosure } from "@mantine/hooks";
 import { IconTrashFilled } from '@tabler/icons-react'
-
 
 const theme = createTheme({
   colors: {
@@ -82,6 +83,8 @@ function App() {
   const [debouncedSearch] = useDebouncedValue(title, 1000)
   const titles = lists.map((item) => item.title).filter((title) => title.toLowerCase().includes(debouncedSearch.toLocaleLowerCase()));
 
+  {/* Notifications */ }
+
 
   useEffect(() => {
     localStorage.setItem("lists", JSON.stringify(lists))
@@ -113,7 +116,7 @@ function App() {
 
   const handleAddQuote = () => {
     if (title.trim() !== '') {
-      open(); // 
+      open();
     }
   };
 
@@ -136,7 +139,7 @@ function App() {
           justifyContent: "space-between",
           alignItems: "center"
         }}>
-        <Accordion.Control>
+        <Accordion.Control icon={"❝"}>
           {item.title}
         </Accordion.Control>
         <Button
@@ -149,9 +152,14 @@ function App() {
         </Button>
       </Box>
       <Accordion.Panel>
-        <List type="ordered">
+        <List type="ordered" spacing="sm">
           {item.quotes.map((quote) => (
-            <Card key={quote.id}>
+            <Card
+              key={quote.id}
+              withBorder shadow="sm"
+              radius="md"
+              style={{ marginBottom: "10px" }}
+            >
               <List.Item key={quote.id}>
                 <Box>
                   <span>{quote.description} (p{quote.pageNo})</span>
@@ -178,14 +186,17 @@ function App() {
         <h1>QuoteNest</h1>
       </Center>
       <Space h="md"></Space>
-      <form>
-        <Autocomplete
-          placeholder="Add Bookname here"
-          value={title}
-          data={titles}
-          onChange={setTitle}
-          required />
-      </form>
+      <Container size={"sm"}>
+        <form>
+          <Autocomplete
+            placeholder="Add Bookname here"
+            value={title}
+            data={titles}
+            onChange={setTitle}
+            required
+          />
+        </form>
+      </Container>
 
       <Space h="md"></Space>
 
@@ -211,12 +222,13 @@ function App() {
           onChange={(e) => setText(e.target.value)}
           placeholder="Add description here"
           required />
+        <Space h={"xs"} />
         <NumberInput
           value={pageNo}
           onChange={setPageNo}
-          placeholder="Add page number here"
+          placeholder="Add page number here (optional)"
         />
-        <Space h="lg"></Space>
+        <Space h="xs"></Space>
         <Center><Button onClick={handleAdd}>Save</Button></Center>
       </Modal>
 
@@ -235,7 +247,7 @@ function App() {
               {items}
             </Accordion>
           ) : (
-            <span>No quotes added yet. Start by adding a quote</span>
+            <Center><span>No quotes added yet. Start by adding a quote</span></Center>
           )}
         </Accordion>
       </Card>

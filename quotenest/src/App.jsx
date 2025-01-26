@@ -1,9 +1,8 @@
-import React, { Fragment, useEffect, useState } from "react"
+import React, { useEffect, useState } from "react"
 import '@mantine/core/styles.css';
 import {
   MantineProvider,
   Button,
-  TextInput,
   Space,
   Accordion,
   Title,
@@ -13,11 +12,14 @@ import {
   Autocomplete,
   createTheme,
   rem,
-  ActionIcon,
-  Group,
-  Box
+  Box,
+  NumberInput,
+  Modal,
+  Textarea,
+  HoverCard,
+  Text
 } from "@mantine/core";
-import { useDebouncedValue } from "@mantine/hooks";
+import { useDebouncedValue, useDisclosure } from "@mantine/hooks";
 import { IconTrashFilled } from '@tabler/icons-react'
 
 
@@ -74,6 +76,7 @@ function App() {
   const [title, setTitle] = useState("")
   const [text, setText] = useState("")
   const [pageNo, setPageNo] = useState("")
+  const [opened, { open, close }] = useDisclosure(false);
 
   {/* Title suggestion filter */ }
   const [debouncedSearch] = useDebouncedValue(title, 1000)
@@ -108,6 +111,12 @@ function App() {
     setPageNo("")
   }
 
+  const handleAddQuote = () => {
+    if (title.trim() !== '') {
+      open(); // 
+    }
+  };
+
   const handleDeleteBook = (id) => {
     setLists((prevList) => prevList.filter((list) => list.id !== id));
   }
@@ -134,7 +143,6 @@ function App() {
           color="red"
           variant="light"
           onClick={() => handleDeleteBook(item.id)}
-          compact
           style={{ marginLeft: "auto" }}
         >
           <IconTrashFilled size={14} />
@@ -147,15 +155,14 @@ function App() {
               <List.Item key={quote.id}>
                 <Box>
                   <span>{quote.description} (p{quote.pageNo})</span>
-                  <ActionIcon
+                  <Button
                     color="red"
                     variant="light"
                     onClick={() => handleDeleteQuote(item.id, quote.id)}
-                    compact
-                    style={{ marginLeft: 8 }} 
+                    style={{ marginLeft: 8 }}
                   >
                     <IconTrashFilled size={12} />
-                  </ActionIcon>
+                  </Button>
                 </Box>
               </List.Item>
             </Card>
@@ -178,20 +185,40 @@ function App() {
           data={titles}
           onChange={setTitle}
           required />
-        <TextInput
+      </form>
+
+      <Space h="md"></Space>
+
+      <Center>
+        <HoverCard width={200} shadow="md">
+          <HoverCard.Target>
+            <Button variant="default" onClick={handleAddQuote}>
+              Add a quote
+            </Button>
+          </HoverCard.Target>
+          <HoverCard.Dropdown>
+            <Text size="sm">
+              {title.trim() === ''
+                ? 'Please enter a book name before adding a quote.'
+                : 'You can now add a quote!'}
+            </Text>
+          </HoverCard.Dropdown>
+        </HoverCard>
+      </Center>
+      <Modal opened={opened} onClose={close} title="Enter description and page number">
+        <Textarea
           value={text}
           onChange={(e) => setText(e.target.value)}
           placeholder="Add description here"
           required />
-        <TextInput
+        <NumberInput
           value={pageNo}
-          onChange={(e) => setPageNo(e.target.value)}
+          onChange={setPageNo}
           placeholder="Add page number here"
         />
-      </form>
-
-      <Space h="md"></Space>
-      <Center><Button onClick={handleAdd}>Save</Button></Center>
+        <Space h="lg"></Space>
+        <Center><Button onClick={handleAdd}>Save</Button></Center>
+      </Modal>
 
       <Space h="lg"></Space>
 

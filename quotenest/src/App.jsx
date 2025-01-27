@@ -26,45 +26,75 @@ import { IconTrashFilled } from '@tabler/icons-react'
 
 const theme = createTheme({
   colors: {
-
-    deepBlue: [
-      '#fdf7ee',
-      '#f7eadd',
-      '#efd1b8',
-      '#e6b897',
-      '#dc9f77',
-      '#d18b63',
-      '#c57d5b',
-      '#b06d4f',
-      '#9c5f46',
-      '#874f3c',
+    gray: [
+      '#f8f8f8',
+      '#f2f2f2',
+      '#e6e6e6',
+      '#d9d9d9',
+      '#cccccc',
+      '#b3b3b3',
+      '#999999',
+      '#808080',
+      '#666666',
+      '#4d4d4d',
     ],
 
-    blue: [
-      '#f9f5ee',
-      '#f0e6d8',
-      '#e0d0b2',
-      '#cfb38c',
-      '#bfa174',
-      '#ac9163',
-      '#9b825a',
-      '#826e4f',
-      '#725f46',
-      '#5f4e3c',
+    offWhite: [
+      '#fefefe',
+      '#f9f9f9',
+      '#f5f5f5',
+      '#f2f2f2',
+      '#f0f0f0',
+      '#e8e8e8',
+      '#e1e1e1',
+      '#d7d7d7',
+      '#cccccc',
+      '#c0c0c0',
+    ],
+
+    cream: [
+      '#fefae0',
+      '#fef3c3',
+      '#fee7a6',
+      '#feed80',
+      '#f9e960',
+      '#f6e540',
+      '#f4e120',
+      '#f2dd00',
+      '#f0d900',
+      '#eecd00',
+    ],
+
+    brown: [
+      '#f5e5cd',
+      '#eeb97c',
+      '#e69138',
+      '#d96e00',
+      '#cc4c00',
+      '#b92b00',
+      '#a01100',
+      '#800000',
+      '#600000',
+      '#400000',
     ],
   },
 
   shadows: {
-    md: '1px 1px 3px rgba(0, 0, 0, .15)',
-    xl: '4px 4px 5px rgba(0, 0, 0, .2)',
+    md: '0 1px 2px rgba(0, 0, 0, 0.05)',
+    xl: '0 2px 4px rgba(0, 0, 0, 0.1)',
   },
 
   headings: {
-    fontFamily: 'Roboto, sans-serif',
+    fontFamily: 'Lora, serif',
+    fontWeight: 400,
     sizes: {
-      h1: { fontSize: rem(36) },
+      h1: { fontSize: rem(38) },
     },
   },
+
+  fontFamily: 'Lora, serif',
+  lineHeight: 1.5,
+
 });
 
 
@@ -82,8 +112,6 @@ function App() {
   {/* Title suggestion filter */ }
   const [debouncedSearch] = useDebouncedValue(title, 1000)
   const titles = lists.map((item) => item.title).filter((title) => title.toLowerCase().includes(debouncedSearch.toLocaleLowerCase()));
-
-  {/* Notifications */ }
 
 
   useEffect(() => {
@@ -132,58 +160,61 @@ function App() {
 
   {/* List mapping */ }
   const items = lists.map((item) => (
-    <Accordion.Item key={item.id} value={item.title}>
-      <Box
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center"
-        }}>
-        <Accordion.Control icon={"❝"}>
-          {item.title}
-        </Accordion.Control>
-        <Button
-          color="red"
-          variant="light"
-          onClick={() => handleDeleteBook(item.id)}
-          style={{ marginLeft: "auto" }}
-        >
-          <IconTrashFilled size={14} />
-        </Button>
-      </Box>
-      <Accordion.Panel>
-        <List type="ordered" spacing="sm">
-          {item.quotes.map((quote) => (
-            <Card
-              key={quote.id}
-              withBorder shadow="sm"
-              radius="md"
-              style={{ marginBottom: "10px" }}
-            >
-              <List.Item key={quote.id}>
-                <Box>
-                  <span>{quote.description} (p{quote.pageNo})</span>
-                  <Button
-                    color="red"
-                    variant="light"
-                    onClick={() => handleDeleteQuote(item.id, quote.id)}
-                    style={{ marginLeft: 8 }}
-                  >
-                    <IconTrashFilled size={12} />
-                  </Button>
-                </Box>
-              </List.Item>
-            </Card>
-          ))}
-        </List>
-      </Accordion.Panel>
-    </Accordion.Item>
+    <Container size={"md"}>
+      <Accordion.Item key={item.id} value={item.title}>
+        <Box
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center"
+          }}>
+          <Accordion.Control icon={"❝"}>
+            <Title order={4}>{item.title}</Title>
+          </Accordion.Control>
+          <Button
+            color="red"
+            variant="light"
+            onClick={() => handleDeleteBook(item.id)}
+            style={{ marginLeft: "auto" }}
+          >
+            <IconTrashFilled size={14} />
+          </Button>
+        </Box>
+        <Accordion.Panel>
+          <List type="ordered" spacing="sm">
+            {item.quotes.map((quote) => (
+              <Card
+                key={quote.id}
+                withBorder shadow="sm"
+                radius="md"
+                style={{ marginBottom: "10px" }}
+              >
+                <List.Item key={quote.id}>
+                  <Box>
+                    <span>{quote.description} (p{quote.pageNo})</span>
+                    <Button
+                      color="red"
+                      variant="light"
+                      onClick={() => handleDeleteQuote(item.id, quote.id)}
+                      style={{ marginLeft: 8 }}
+                    >
+                      <IconTrashFilled size={12} />
+                    </Button>
+                  </Box>
+                </List.Item>
+              </Card>
+            ))}
+          </List>
+        </Accordion.Panel>
+      </Accordion.Item>
+    </Container>
   ))
 
   return (
     <MantineProvider theme={theme}>
+      <Space h="lg"></Space>
       <Center>
-        <h1>QuoteNest</h1>
+        <Title order={1}>QuoteNest</Title>
       </Center>
       <Space h="md"></Space>
       <Container size={"sm"}>

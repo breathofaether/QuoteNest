@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react"
 import '@mantine/core/styles.css';
 import '@mantine/notifications/styles.css';
+
 import {
   MantineProvider,
   Button,
@@ -20,9 +21,15 @@ import {
   HoverCard,
   Text,
   Container,
+  Notification,
 } from "@mantine/core";
 import { useDebouncedValue, useDisclosure } from "@mantine/hooks";
-import { IconTrashFilled } from '@tabler/icons-react'
+import { IconTrashFilled, IconX, IconCheck } from '@tabler/icons-react'
+import { notifications, Notifications } from '@mantine/notifications';
+
+
+
+
 
 const theme = createTheme({
   colors: {
@@ -150,12 +157,26 @@ function App() {
 
   const handleDeleteBook = (id) => {
     setLists((prevList) => prevList.filter((list) => list.id !== id));
+    notifications.show({
+      title: "Book Removed",
+      message: "The selected book has been successfully deleted from your list.",
+      autoClose: 3000,
+      icon: <IconCheck size={16} />,
+      color: "teal",
+    });
   }
 
   const handleDeleteQuote = (bookId, quoteId) => {
     setLists((prevLists) => prevLists.map((list) =>
       list.id === bookId ? { ...list, quotes: list.quotes.filter((quote) => quote.id !== quoteId) } : list
     ))
+    notifications.show({
+      title: "Quote Removed",
+      message: "The selected quote has been successfully deleted.",
+      autoClose: 3000,
+      icon: <IconCheck size={16} />,
+      color: "teal",
+    });
   }
 
   {/* List mapping */ }
@@ -169,7 +190,7 @@ function App() {
             alignItems: "center"
           }}>
           <Accordion.Control icon={"❝"}>
-            <Title order={4}>{item.title}</Title>
+            <Title key={item.id} order={4}>{item.title}</Title>
           </Accordion.Control>
           <Button
             color="red"
@@ -228,9 +249,7 @@ function App() {
           />
         </form>
       </Container>
-
       <Space h="md"></Space>
-
       <Center>
         <HoverCard width={200} shadow="md">
           <HoverCard.Target>
@@ -262,15 +281,11 @@ function App() {
         <Space h="xs"></Space>
         <Center><Button onClick={handleAdd}>Save</Button></Center>
       </Modal>
-
       <Space h="lg"></Space>
-
       <Center>
         <Title order={2}>Quotes</Title>
       </Center>
-
       <Space h="md"></Space>
-
       <Card>
         <Accordion defaultValue={"Notes"}>
           {items.length > 0 ? (
@@ -282,6 +297,7 @@ function App() {
           )}
         </Accordion>
       </Card>
+      <Notifications position="top-right" zIndex={1000} />
     </MantineProvider>
   )
 }

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react"
 import '@mantine/core/styles.css';
 import '@mantine/notifications/styles.css';
-
+import classes from './DndList.module.css';
 import {
   MantineProvider,
   Button,
@@ -21,11 +21,12 @@ import {
   HoverCard,
   Text,
   Container,
-  Notification,
 } from "@mantine/core";
+import { useListState } from '@mantine/hooks';
 import { useDebouncedValue, useDisclosure } from "@mantine/hooks";
-import { IconTrashFilled, IconX, IconCheck } from '@tabler/icons-react'
+import { IconTrashFilled, IconX, IconCheck, IconGripVertical } from '@tabler/icons-react'
 import { notifications, Notifications } from '@mantine/notifications';
+import { DragDropContext, Draggable, Droppable } from '@hello-pangea/dnd';
 
 
 
@@ -120,6 +121,11 @@ function App() {
   const [debouncedSearch] = useDebouncedValue(title, 1000)
   const titles = lists.map((item) => item.title).filter((title) => title.toLowerCase().includes(debouncedSearch.toLocaleLowerCase()));
 
+  {/* Drag n Drop */ }
+  const [state, handlers] = useListState(lists)
+  useEffect(() => {
+    handlers.setState(lists);
+  }, [lists, handlers]);
 
   useEffect(() => {
     localStorage.setItem("lists", JSON.stringify(lists))
@@ -132,9 +138,19 @@ function App() {
 
     if (existingTitle) {
       const updatedQuotes = [...existingTitle.quotes, { id: Date.now(), description: text, pageNo: pageNo || ". N/A" }];
-      setLists(lists.map((list) => (list.id === existingTitle.id ? { ...list, quotes: updatedQuotes } : list)))
+      const updatedLists = (lists.map((list) => (list.id === existingTitle.id ? { ...list, quotes: updatedQuotes } : list)))
+
+      setLists(updatedLists)
+      notifications.show({
+        title: "Quote Added",
+        message: "Your quote has been successfully added to the book.",
+        autoClose: 3000,
+        icon: <IconCheck size={16} />,
+        color: "blue",
+      });
+
     } else {
-      setLists([
+      const updatedLists = ([
         ...lists,
         {
           id: Date.now(),
@@ -142,6 +158,15 @@ function App() {
           quotes: [{ id: Date.now(), description: text, pageNo: pageNo || ". N/A" }]
         }
       ])
+
+      setLists(updatedLists)
+      notifications.show({
+        title: "Book Added",
+        message: "Your new book has been successfully added to the list!",
+        autoClose: 3000,
+        icon: <IconCheck size={16} />,
+        color: "green",
+      });
     }
 
     setTitle("")
@@ -156,14 +181,24 @@ function App() {
   };
 
   const handleDeleteBook = (id) => {
-    setLists((prevList) => prevList.filter((list) => list.id !== id));
-    notifications.show({
-      title: "Book Removed",
-      message: "The selected book has been successfully deleted from your list.",
-      autoClose: 3000,
-      icon: <IconCheck size={16} />,
-      color: "teal",
-    });
+    try {
+      setLists((prevList) => prevList.filter((list) => list.id !== id));
+      notifications.show({
+        title: "Book Removed",
+        message: "The selected book has been successfully deleted from your list.",
+        autoClose: 3000,
+        icon: <IconCheck size={16} />,
+        color: "teal",
+      });
+    } catch (error) {
+      notifications.show({
+        title: "Error",
+        message: "Something went wrong. Please Try again",
+        autoClose: 3000,
+        icon: <IconX size={16} />,
+        color: "red",
+      });
+    }
   }
 
   const handleDeleteQuote = (bookId, quoteId) => {
@@ -180,27 +215,40 @@ function App() {
   }
 
   {/* List mapping */ }
-  const items = lists.map((item) => (
-    <Container size={"md"}>
+  const items = state.map((item, index) => (
+    <Container size={"lg"} key={item.id}>
       <Accordion.Item key={item.id} value={item.title}>
-        <Box
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center"
-          }}>
-          <Accordion.Control icon={"❝"}>
-            <Title key={item.id} order={4}>{item.title}</Title>
-          </Accordion.Control>
-          <Button
-            color="red"
-            variant="light"
-            onClick={() => handleDeleteBook(item.id)}
-            style={{ marginLeft: "auto" }}
-          >
-            <IconTrashFilled size={14} />
-          </Button>
-        </Box>
+        <Draggable key={item.id} index={index} type={item.id} draggableId={item.title}>
+          {(provided) => (
+            <div
+              className={classes.dragHandle}
+              {...provided.draggableProps}
+              {...provided.dragHandleProps}
+              ref={provided.innerRef}
+            >
+              <Box
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center"
+                }}>
+                <IconGripVertical size={18} stroke={1.5} />
+
+                <Accordion.Control icon={"❝"}>
+                  <Title key={item.id} order={4} style={{ lineHeight: 1.2 }}>{item.title}</Title>
+                </Accordion.Control>
+                <Button
+                  color="red"
+                  variant="light"
+                  onClick={() => handleDeleteBook(item.id)}
+                  style={{ marginLeft: "auto" }}
+                >
+                  <IconTrashFilled size={14} />
+                </Button>
+              </Box>
+            </div>
+          )}
+        </Draggable>
         <Accordion.Panel>
           <List type="ordered" spacing="sm">
             {item.quotes.map((quote) => (
@@ -285,12 +333,27 @@ function App() {
       <Center>
         <Title order={2}>Quotes</Title>
       </Center>
-      <Space h="md"></Space>
       <Card>
         <Accordion defaultValue={"Notes"}>
           {items.length > 0 ? (
             <Accordion>
-              {items}
+              <DragDropContext
+                onDragEnd={({ destination, source }) =>
+                  handlers.reorder({ from: source.index, to: destination?.index || null })
+                }
+              >
+                <Droppable key={items.id} droppableId="dnd-list" direction="vertical">
+                  {(provided) => (
+                    <div
+                      {...provided.droppableProps}
+                      ref={provided.innerRef}
+                    >
+                      {items}
+                      {provided.placeholder}
+                    </div>
+                  )}
+                </Droppable>
+              </DragDropContext>
             </Accordion>
           ) : (
             <Center><span>No quotes added yet. Start by adding a quote</span></Center>

@@ -125,8 +125,8 @@ function App() {
   {/* Drag n Drop */ }
   const [state, handlers] = useListState(lists)
   useEffect(() => {
-    handlers.setState(lists);
-  }, [lists, handlers]);
+    if (lists !== state) handlers.setState(lists);
+  }, [lists]);
 
   useEffect(() => {
     localStorage.setItem("lists", JSON.stringify(lists))

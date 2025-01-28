@@ -23,6 +23,7 @@ import {
   HoverCard,
   Text,
   Container,
+  Menu,
 } from "@mantine/core";
 import { useListState } from '@mantine/hooks';
 import { useDebouncedValue, useDisclosure } from "@mantine/hooks";
@@ -261,15 +262,22 @@ function App() {
               >
                 <List.Item key={quote.id}>
                   <Box>
-                    <span>{quote.description} (p{quote.pageNo})</span>
-                    <Button
-                      color="red"
-                      variant="light"
-                      onClick={() => handleDeleteQuote(item.id, quote.id)}
-                      style={{ marginLeft: 8 }}
-                    >
-                      <IconTrashFilled size={12} />
-                    </Button>
+                    <Menu withinPortal position="right-start">
+                      <Menu.Target>
+                        <span>{quote.description} (p{quote.pageNo})</span>
+                      </Menu.Target>
+                      <Menu.Dropdown>
+                        <Menu.Item onClick={() => handleDeleteQuote(item.id, quote.id)} disabled>
+                          Edit Quote
+                        </Menu.Item>
+                        <Menu.Item onClick={() => handleDeleteQuote(item.id, quote.id)} disabled>
+                          Add to favorites
+                        </Menu.Item>
+                        <Menu.Item onClick={() => handleDeleteQuote(item.id, quote.id)}>
+                          Delete
+                        </Menu.Item>
+                      </Menu.Dropdown>
+                    </Menu>
                   </Box>
                 </List.Item>
               </Card>

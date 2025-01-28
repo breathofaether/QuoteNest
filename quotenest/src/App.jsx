@@ -217,7 +217,7 @@ function App() {
 
   {/* List mapping */ }
   const items = state.map((item, index) => (
-    <Container size={"lg"} key={item.id}>
+    <Container size={"md"} key={item.id}>
       <Accordion.Item key={item.id} value={item.title}>
         <Draggable key={item.id} index={index} type={item.id} draggableId={item.title}>
           {(provided) => (
@@ -233,7 +233,7 @@ function App() {
                   justifyContent: "space-between",
                   alignItems: "center"
                 }}>
-                <IconGripVertical size={18} stroke={1.5} />
+                <IconGripVertical size={22} stroke={1.5} />
 
                 <Accordion.Control icon={"❝"}>
                   <Title key={item.id} order={4} style={{ lineHeight: 1.2 }}>{item.title}</Title>

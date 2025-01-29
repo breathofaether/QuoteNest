@@ -115,10 +115,15 @@ function App() {
     const storedLists = localStorage.getItem("lists");
     return storedLists ? JSON.parse(storedLists) : []
   })
+  const [favorites, setFavorites] = useState(() => {
+    const storedLists = localStorage.getItem("fav_lists");
+    return storedLists ? JSON.parse(storedLists) : []
+  })
   const [title, setTitle] = useState("")
   const [text, setText] = useState("")
   const [pageNo, setPageNo] = useState("")
   const [opened, { open, close }] = useDisclosure(false);
+  const [openedFav, { open: open_fav, close: close_fav }] = useDisclosure(false);
 
   {/* Title suggestion filter */ }
   const [debouncedSearch] = useDebouncedValue(title, 1000)
@@ -130,9 +135,13 @@ function App() {
     if (lists !== state) handlers.setState(lists);
   }, [lists]);
 
+  { /* Retrieve Lists */ }
   useEffect(() => {
     localStorage.setItem("lists", JSON.stringify(lists))
   }, [lists])
+  useEffect(() => {
+    localStorage.setItem("fav_lists", JSON.stringify(favorites))
+  }, [favorites])
 
   const handleAdd = () => {
     if (title.trim() === "" || text.trim() === "") return;
@@ -177,10 +186,58 @@ function App() {
     setPageNo("")
   }
 
+  const toggleFavorite = (quoteId, bookTitle, quoteDescription, quotePageNo) => {
+    const favoriteItem = favorites.find((item) => item.quoteId === quoteId);
+    const isFav = Boolean(favoriteItem)
+    const favId = favoriteItem ? favoriteItem.id : null;
+
+    if (isFav) {
+      handleDeleteFavorite(favId)
+    } else {
+      handleAddFavorite(quoteId, bookTitle, quoteDescription, quotePageNo)
+    }
+  }
+
+  const handleAddFavorite = (quoteId, bookTitle, quoteDescription, quotePageNo) => {
+    if (favorites.some((list) => list.quoteId === quoteId)) {
+      return
+    }
+
+    try {
+      const updatedLists = {
+        id: Date.now(),
+        title: bookTitle,
+        quoteId: quoteId,
+        quoteDescription: quoteDescription,
+        pageNo: quotePageNo,
+      }
+      setFavorites([...favorites, updatedLists])
+      notifications.show({
+        title: "Quote Added",
+        message: "Quote has been successfully added to the favorite list!",
+        autoClose: 3000,
+        icon: <IconCheck size={16} />,
+        color: "green",
+      });
+    } catch (error) {
+      notifications.show({
+        title: "Error",
+        message: "Something went wrong. Please Try again",
+        autoClose: 3000,
+        icon: <IconX size={16} />,
+        color: "red",
+      });
+    }
+  }
+
   const handleAddQuote = () => {
     if (title.trim() !== '') {
       open();
     }
+  };
+
+  const handleOpenFavorite = () => {
+    open_fav();
   };
 
   const handleDeleteBook = (id) => {
@@ -215,6 +272,10 @@ function App() {
       icon: <IconCheck size={16} />,
       color: "teal",
     });
+  }
+
+  const handleDeleteFavorite = (id) => {
+    setFavorites((prevList) => prevList.filter((list) => list.id !== id));
   }
 
   {/* List mapping */ }
@@ -264,14 +325,20 @@ function App() {
                   <Box>
                     <Menu withinPortal position="bottom-start" withArrow>
                       <Menu.Target>
-                        <span>{quote.description} (p{quote.pageNo})</span>
+                        <div>
+                          <em>{quote.description} </em>
+                          <span style={{ fontStyle: "italic", color: "#888" }}>
+                            — p. {quote.pageNo}
+                          </span>
+                        </div>
                       </Menu.Target>
                       <Menu.Dropdown>
                         <Menu.Item onClick={() => handleDeleteQuote(item.id, quote.id)} disabled>
                           Edit Quote
                         </Menu.Item>
-                        <Menu.Item onClick={() => handleDeleteQuote(item.id, quote.id)} disabled>
-                          Add to favorites
+                        <Menu.Item
+                          onClick={() => toggleFavorite(quote.id, quote.title, quote.description, quote.pageNo)}>
+                          {favorites.some((item) => item.quoteId === quote.id) ? "Delete from favorites" : "Add to favorites"}
                         </Menu.Item>
                         <Menu.Item onClick={() => handleDeleteQuote(item.id, quote.id)}>
                           Delete
@@ -369,6 +436,44 @@ function App() {
           )}
         </Accordion>
       </Card>
+      {favorites.length > 0 && (
+        <Center>
+          <Button variant="default" onClick={handleOpenFavorite}>
+            Open Favorites
+          </Button>
+        </Center>
+      )}
+      <Modal opened={openedFav} onClose={close_fav} title="Favorites" fullScreen radius={0}
+        transitionProps={{ transition: 'fade', duration: 200 }}>
+        <List type="ordered" spacing="sm">
+          {favorites.map((item) => (
+            <Card key={item.id}
+              withBorder shadow="sm"
+              radius="lg"
+              style={{ marginBottom: "10px" }}>
+              <List.Item key={item.id}>
+                <Box>
+                  <Menu withinPortal position="bottom-start" withArrow>
+                    <Menu.Target>
+                      <div>
+                        <em>{item.quoteDescription} </em>
+                        <span style={{ fontStyle: "italic", color: "#888" }}>
+                          — p. {item.pageNo}
+                        </span>
+                      </div>
+                    </Menu.Target>
+                    <Menu.Dropdown>
+                      <Menu.Item onClick={() => handleDeleteFavorite(item.id)}>
+                        Delete
+                      </Menu.Item>
+                    </Menu.Dropdown>
+                  </Menu>
+                </Box>
+              </List.Item>
+            </Card>
+          ))}
+        </List>
+      </Modal>
       <Notifications position="top-right" zIndex={1000} />
     </MantineProvider>
   )

@@ -257,12 +257,12 @@ function App() {
               <Card
                 key={quote.id}
                 withBorder shadow="sm"
-                radius="md"
+                radius="lg"
                 style={{ marginBottom: "10px" }}
               >
                 <List.Item key={quote.id}>
                   <Box>
-                    <Menu withinPortal position="right-start">
+                    <Menu withinPortal position="bottom-start" withArrow>
                       <Menu.Target>
                         <span>{quote.description} (p{quote.pageNo})</span>
                       </Menu.Target>

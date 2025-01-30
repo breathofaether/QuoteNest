@@ -121,9 +121,13 @@ function App() {
   })
   const [title, setTitle] = useState("")
   const [text, setText] = useState("")
+  const [editText, setEditText] = useState("")
   const [pageNo, setPageNo] = useState("")
   const [opened, { open, close }] = useDisclosure(false);
   const [openedFav, { open: open_fav, close: close_fav }] = useDisclosure(false);
+  const [openedEdit, { open: open_edit, close: close_edit }] = useDisclosure(false);
+
+  
 
   {/* Title suggestion filter */ }
   const [debouncedSearch] = useDebouncedValue(title, 1000)
@@ -149,7 +153,7 @@ function App() {
     const existingTitle = lists.find((list) => list.title.trim().toLowerCase() === title.trim().toLowerCase());
 
     if (existingTitle) {
-      const updatedQuotes = [...existingTitle.quotes, { id: Date.now(), description: text, pageNo: pageNo || ". N/A" }];
+      const updatedQuotes = [...existingTitle.quotes, { id: Date.now(), description: text, pageNo: pageNo || " N/A" }];
       const updatedLists = (lists.map((list) => (list.id === existingTitle.id ? { ...list, quotes: updatedQuotes } : list)))
 
       setLists(updatedLists)
@@ -167,7 +171,7 @@ function App() {
         {
           id: Date.now(),
           title: title,
-          quotes: [{ id: Date.now(), description: text, pageNo: pageNo || ". N/A" }]
+          quotes: [{ id: Date.now(), description: text, pageNo: pageNo || " N/A" }]
         }
       ])
 
@@ -276,6 +280,10 @@ function App() {
     });
   }
 
+  const handleEditQuote = () => {
+
+  }
+
   const handleDeleteFavorite = (id) => {
     setFavorites((prevList) => prevList.filter((list) => list.id !== id));
   }
@@ -335,7 +343,7 @@ function App() {
                         </div>
                       </Menu.Target>
                       <Menu.Dropdown>
-                        <Menu.Item onClick={() => handleDeleteQuote(item.id, quote.id)} disabled>
+                        <Menu.Item onClick={() => handleEditQuote(quote)} disabled>
                           Edit Quote
                         </Menu.Item>
                         <Menu.Item

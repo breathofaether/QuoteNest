@@ -181,7 +181,6 @@ function App() {
       });
     }
 
-    setTitle("")
     setText("")
     setPageNo("")
   }
@@ -365,6 +364,7 @@ function App() {
       <Container size={"sm"}>
         <form>
           <Autocomplete
+          radius={"md"}
             placeholder="Add Bookname here"
             value={title}
             data={titles}
@@ -392,12 +392,14 @@ function App() {
       </Center>
       <Modal opened={opened} onClose={close} title="Enter description and page number">
         <Textarea
+        radius={"md"}
           value={text}
           onChange={(e) => setText(e.target.value)}
           placeholder="Add description here"
           required />
         <Space h={"xs"} />
         <NumberInput
+        radius={"md"}
           value={pageNo}
           onChange={setPageNo}
           placeholder="Add page number here (optional)"
@@ -446,7 +448,7 @@ function App() {
       <Modal opened={openedFav} onClose={close_fav} title="Favorites" fullScreen radius={0}
         transitionProps={{ transition: 'fade', duration: 200 }}>
         <List type="ordered" spacing="sm">
-          {favorites.map((item) => (
+        {favorites.map((item) => (
             <Card key={item.id}
               withBorder shadow="sm"
               radius="lg"
@@ -458,7 +460,7 @@ function App() {
                       <div>
                         <em>{item.quoteDescription} </em>
                         <span style={{ fontStyle: "italic", color: "#888" }}>
-                          — p. {item.pageNo}
+                          — {item.bookTitle}, p. {item.pageNo}
                         </span>
                       </div>
                     </Menu.Target>

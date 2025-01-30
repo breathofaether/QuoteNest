@@ -185,17 +185,10 @@ function App() {
     setPageNo("")
   }
 
-  const toggleFavorite = (quoteId, bookTitle, quoteDescription, quotePageNo) => {
-    const favoriteItem = favorites.find((item) => item.quoteId === quoteId);
-    const isFav = Boolean(favoriteItem)
-    const favId = favoriteItem ? favoriteItem.id : null;
 
-    if (isFav) {
-      handleDeleteFavorite(favId)
-    } else {
-      handleAddFavorite(quoteId, bookTitle, quoteDescription, quotePageNo)
-    }
-  }
+  const handleOpenFavorite = () => {
+    open_fav();
+  };
 
   const handleAddFavorite = (quoteId, bookTitle, quoteDescription, quotePageNo) => {
     if (favorites.some((list) => list.quoteId === quoteId)) {
@@ -229,15 +222,25 @@ function App() {
     }
   }
 
+  const toggleFavorite = (quoteId, bookTitle, quoteDescription, quotePageNo) => {
+    const favoriteItem = favorites.find((item) => item.quoteId === quoteId);
+    const isFav = Boolean(favoriteItem)
+    const favId = favoriteItem ? favoriteItem.id : null;
+
+    if (isFav) {
+      handleDeleteFavorite(favId)
+    } else {
+      handleAddFavorite(quoteId, bookTitle, quoteDescription, quotePageNo)
+    }
+  }
+
+  
   const handleAddQuote = () => {
     if (title.trim() !== '') {
       open();
     }
   };
 
-  const handleOpenFavorite = () => {
-    open_fav();
-  };
 
   const handleDeleteBook = (id) => {
     try {
@@ -336,7 +339,7 @@ function App() {
                           Edit Quote
                         </Menu.Item>
                         <Menu.Item
-                          onClick={() => toggleFavorite(quote.id, quote.title, quote.description, quote.pageNo)}>
+                          onClick={() => toggleFavorite(quote.id, item.title, quote.description, quote.pageNo)}>
                           {favorites.some((item) => item.quoteId === quote.id) ? "Delete from favorites" : "Add to favorites"}
                         </Menu.Item>
                         <Menu.Item onClick={() => handleDeleteQuote(item.id, quote.id)}>
@@ -460,7 +463,7 @@ function App() {
                       <div>
                         <em>{item.quoteDescription} </em>
                         <span style={{ fontStyle: "italic", color: "#888" }}>
-                          — {item.bookTitle}, p. {item.pageNo}
+                          — {item.title}, p. {item.pageNo}
                         </span>
                       </div>
                     </Menu.Target>

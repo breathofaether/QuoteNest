@@ -121,13 +121,15 @@ function App() {
   })
   const [title, setTitle] = useState("")
   const [text, setText] = useState("")
-  const [editText, setEditText] = useState("")
   const [pageNo, setPageNo] = useState("")
   const [opened, { open, close }] = useDisclosure(false);
-  const [openedFav, { open: open_fav, close: close_fav }] = useDisclosure(false);
-  const [openedEdit, { open: open_edit, close: close_edit }] = useDisclosure(false);
+  const [openFav, { open: open_fav, close: close_fav }] = useDisclosure(false);
 
-  
+  {/* Edit Quote */ }
+  const [openEditModal, { open: open_edit, close: close_edit }] = useDisclosure(false);
+  const [selectedQuote, setSelectedQuote] = useState(null)
+  const [editText, setEditText] = useState("")
+  const [editPageNo, setEditPageNo] = useState("")
 
   {/* Title suggestion filter */ }
   const [debouncedSearch] = useDebouncedValue(title, 1000)
@@ -189,6 +191,51 @@ function App() {
     setPageNo("")
   }
 
+  const handleAddQuote = () => {
+    if (title.trim() !== '') {
+      open();
+    }
+  };
+
+  const handleEditQuote = (quote) => {
+    setSelectedQuote(quote)
+    setEditText(quote.description)
+    setEditPageNo(quote.pageNo)
+    open_edit()
+  }
+
+  const handleSaveQuote = () => {
+    if (!selectedQuote) return;
+
+    const updatedLists = lists.map((list) => ({
+      ...list,
+      quotes: list.quotes.map((quote) =>
+        quote.id === selectedQuote.id
+          ? { ...quote, description: editText, pageNo: editPageNo }
+          : quote
+      ),
+    }));
+
+    const updatedFavorites = favorites.map((fav) =>
+      fav.quoteId === selectedQuote.id ?
+        { ...fav, quoteDescription: editText, pageNo: editPageNo || " N/A" }
+        : fav
+    )
+
+    setLists(updatedLists)
+    setFavorites(updatedFavorites)
+    close_edit()
+
+    notifications.show(
+      {
+        title: "Quote Updated",
+        message: "Your quote has been successfully updated in both lists and favorites.",
+        autoClose: 3000,
+        icon: <IconCheck size={16} />,
+        color: "blue",
+      }
+    )
+  }
 
   const handleOpenFavorite = () => {
     open_fav();
@@ -238,14 +285,6 @@ function App() {
     }
   }
 
-  
-  const handleAddQuote = () => {
-    if (title.trim() !== '') {
-      open();
-    }
-  };
-
-
   const handleDeleteBook = (id) => {
     try {
       setLists((prevList) => prevList.filter((list) => list.id !== id));
@@ -278,10 +317,6 @@ function App() {
       icon: <IconCheck size={16} />,
       color: "teal",
     });
-  }
-
-  const handleEditQuote = () => {
-
   }
 
   const handleDeleteFavorite = (id) => {
@@ -343,7 +378,7 @@ function App() {
                         </div>
                       </Menu.Target>
                       <Menu.Dropdown>
-                        <Menu.Item onClick={() => handleEditQuote(quote)} disabled>
+                        <Menu.Item onClick={() => handleEditQuote(quote)}>
                           Edit Quote
                         </Menu.Item>
                         <Menu.Item
@@ -375,7 +410,7 @@ function App() {
       <Container size={"sm"}>
         <form>
           <Autocomplete
-          radius={"md"}
+            radius={"md"}
             placeholder="Add Bookname here"
             value={title}
             data={titles}
@@ -403,14 +438,14 @@ function App() {
       </Center>
       <Modal opened={opened} onClose={close} title="Enter description and page number">
         <Textarea
-        radius={"md"}
+          radius={"md"}
           value={text}
           onChange={(e) => setText(e.target.value)}
           placeholder="Add description here"
           required />
         <Space h={"xs"} />
         <NumberInput
-        radius={"md"}
+          radius={"md"}
           value={pageNo}
           onChange={setPageNo}
           placeholder="Add page number here (optional)"
@@ -456,10 +491,10 @@ function App() {
           </Button>
         </Center>
       )}
-      <Modal opened={openedFav} onClose={close_fav} title="Favorites" fullScreen radius={0}
+      <Modal opened={openFav} onClose={close_fav} title="Favorites" fullScreen radius={0}
         transitionProps={{ transition: 'fade', duration: 200 }}>
         <List type="ordered" spacing="sm">
-        {favorites.map((item) => (
+          {favorites.map((item) => (
             <Card key={item.id}
               withBorder shadow="sm"
               radius="lg"
@@ -486,6 +521,23 @@ function App() {
             </Card>
           ))}
         </List>
+      </Modal>
+      <Modal opened={openEditModal} onClose={close_edit} title="Enter description and page number">
+        <Textarea
+          radius={"md"}
+          value={editText}
+          onChange={(e) => setEditText(e.target.value)}
+          placeholder="Edit description here"
+          required />
+        <Space h={"xs"} />
+        <NumberInput
+          radius={"md"}
+          value={editPageNo}
+          onChange={setEditPageNo}
+          placeholder="Edit page number here (optional)"
+        />
+        <Space h="xs"></Space>
+        <Center><Button onClick={handleSaveQuote}>Save Changes</Button></Center>
       </Modal>
       <Notifications position="top-right" zIndex={1000} />
     </MantineProvider>

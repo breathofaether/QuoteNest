@@ -211,7 +211,7 @@ function App() {
       ...list,
       quotes: list.quotes.map((quote) =>
         quote.id === selectedQuote.id
-          ? { ...quote, description: editText, pageNo: editPageNo }
+          ? { ...quote, description: editText, pageNo: editPageNo || " N/A"}
           : quote
       ),
     }));

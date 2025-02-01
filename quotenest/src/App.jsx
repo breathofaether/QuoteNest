@@ -24,18 +24,18 @@ import {
   Text,
   Container,
   Menu,
+  Avatar,
 } from "@mantine/core";
 import { useListState } from '@mantine/hooks';
 import { useDebouncedValue, useDisclosure } from "@mantine/hooks";
-import { IconTrashFilled, IconX, IconCheck, IconGripVertical } from '@tabler/icons-react'
+import { IconTrashFilled, IconX, IconCheck, IconLogin2, IconSun, IconMoon, } from '@tabler/icons-react'
 import { notifications, Notifications } from '@mantine/notifications';
 import { DragDropContext, Draggable, Droppable } from '@hello-pangea/dnd';
-
-
-
+import { AuthenticationForm } from "./auth/AuthenticationForm";
 
 
 const theme = createTheme({
+
   colors: {
     gray: [
       '#f8f8f8',
@@ -124,10 +124,13 @@ function App() {
   const [pageNo, setPageNo] = useState("")
   const [opened, { open, close }] = useDisclosure(false);
   const [openFav, { open: open_fav, close: close_fav }] = useDisclosure(false);
+  const [openAuthentication, { open: open_auth, close: close_auth }] = useDisclosure(false);
 
   {/* Edit Quote */ }
   const [openEditModal, { open: open_edit, close: close_edit }] = useDisclosure(false);
+  const [selectedList, setSelectedList] = useState(null)
   const [selectedQuote, setSelectedQuote] = useState(null)
+  const [editTitle, setEditTitle] = useState("")
   const [editText, setEditText] = useState("")
   const [editPageNo, setEditPageNo] = useState("")
 
@@ -197,8 +200,10 @@ function App() {
     }
   };
 
-  const handleEditQuote = (quote) => {
+  const handleEditQuote = (item, quote) => {
+    setSelectedList(item)
     setSelectedQuote(quote)
+    setEditTitle(item.title)
     setEditText(quote.description)
     setEditPageNo(quote.pageNo)
     open_edit()
@@ -206,19 +211,27 @@ function App() {
 
   const handleSaveQuote = () => {
     if (!selectedQuote) return;
+    if (!selectedList) return;
 
-    const updatedLists = lists.map((list) => ({
-      ...list,
-      quotes: list.quotes.map((quote) =>
-        quote.id === selectedQuote.id
-          ? { ...quote, description: editText, pageNo: editPageNo || " N/A"}
-          : quote
-      ),
-    }));
+    const updatedLists = lists.map((list) => (
+      list.id === selectedList.id ? {
+        ...list,
+        title: editTitle.trim() ? editTitle : list.title,
+        quotes: list.quotes.map((quote) =>
+          quote.id === selectedQuote.id
+            ? { ...quote, description: editText, pageNo: editPageNo || " N/A" }
+            : quote
+        ),
+      } : list));
 
     const updatedFavorites = favorites.map((fav) =>
       fav.quoteId === selectedQuote.id ?
-        { ...fav, quoteDescription: editText, pageNo: editPageNo || " N/A" }
+        {
+          ...fav,
+          title: editTitle.trim() ? editTitle : quote.title,
+          quoteDescription: editText,
+          pageNo: editPageNo || " N/A"
+        }
         : fav
     )
 
@@ -378,7 +391,7 @@ function App() {
                         </div>
                       </Menu.Target>
                       <Menu.Dropdown>
-                        <Menu.Item onClick={() => handleEditQuote(quote)}>
+                        <Menu.Item onClick={() => handleEditQuote(item, quote)}>
                           Edit Quote
                         </Menu.Item>
                         <Menu.Item
@@ -525,6 +538,13 @@ function App() {
       <Modal opened={openEditModal} onClose={close_edit} title="Enter description and page number">
         <Textarea
           radius={"md"}
+          value={editTitle}
+          onChange={(e) => setEditTitle(e.target.value)}
+          placeholder="Edit title here"
+          required />
+        <Space h={"xs"} />
+        <Textarea
+          radius={"md"}
           value={editText}
           onChange={(e) => setEditText(e.target.value)}
           placeholder="Edit description here"
@@ -539,6 +559,23 @@ function App() {
         <Space h="xs"></Space>
         <Center><Button onClick={handleSaveQuote}>Save Changes</Button></Center>
       </Modal>
+
+      <Box style={{ position: "absolute", top: "20px", left: "20px", zIndex: 1000 }}>
+        <Menu withinPortal position="bottom-start" withArrow>
+          <Menu.Target>
+            <Avatar
+              variant="transparent"
+              radius={"xl"}
+            />
+          </Menu.Target>
+          <Menu.Dropdown>
+            <Menu.Item icon={<IconLogin2 size={14} />} onClick={open_auth} disabled>
+              Sign In / Register
+            </Menu.Item>
+          </Menu.Dropdown>
+        </Menu>
+      </Box>
+      <AuthenticationForm opened={openAuthentication} onClose={close_auth} />
       <Notifications position="top-right" zIndex={1000} />
     </MantineProvider>
   )

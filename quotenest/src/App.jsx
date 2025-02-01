@@ -516,6 +516,7 @@ function App() {
         onClose={close_fav}
         title="Favorites"
         size={"auto"}
+        centered
         transitionProps={{ transition: 'fade', duration: 200 }}
       >
         <List type="ordered" spacing="sm">

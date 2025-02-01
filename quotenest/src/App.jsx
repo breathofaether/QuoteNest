@@ -153,7 +153,7 @@ function App() {
     localStorage.setItem("fav_lists", JSON.stringify(favorites))
   }, [favorites])
 
-  {/* Theme */}
+  {/* Theme */ }
   const [colorScheme, setColorScheme] = useState('light');
 
   const handleAdd = () => {
@@ -418,170 +418,178 @@ function App() {
   ))
 
   return (
-      <MantineProvider theme={{...theme, colorScheme}} defaultColorScheme={colorScheme}  withGlobalStyles withNormalizeCSS>
-        <Space h="lg"></Space>
-        <Center>
-          <Title order={1}>QuoteNest</Title>
-        </Center>
-        <Space h="md"></Space>
-        <Container size={"sm"}>
-          <form>
-            <Autocomplete
-              radius={"md"}
-              placeholder="Add Bookname here"
-              value={title}
-              data={titles}
-              onChange={setTitle}
-              required
-            />
-          </form>
-        </Container>
-        <Space h="md"></Space>
-        <Center>
-          <HoverCard width={200} shadow="md">
-            <HoverCard.Target>
-              <Button variant="default" onClick={handleAddQuote}>
-                Add a quote
-              </Button>
-            </HoverCard.Target>
-            <HoverCard.Dropdown>
-              <Text size="sm">
-                {title.trim() === ''
-                  ? 'Please enter a book name before adding a quote.'
-                  : 'You can now add a quote!'}
-              </Text>
-            </HoverCard.Dropdown>
-          </HoverCard>
-        </Center>
-        <Modal opened={opened} onClose={close} title="Enter description and page number">
-          <Textarea
+    <MantineProvider theme={{ ...theme, colorScheme }} defaultColorScheme={colorScheme} withGlobalStyles withNormalizeCSS>
+      <Space h="lg"></Space>
+      <Center>
+        <Title order={1}>QuoteNest</Title>
+      </Center>
+      <Space h="md"></Space>
+      <Container size={"sm"}>
+        <form>
+          <Autocomplete
             radius={"md"}
-            value={text}
-            onChange={(e) => setText(e.target.value)}
-            placeholder="Add description here"
-            required />
-          <Space h={"xs"} />
-          <NumberInput
-            radius={"md"}
-            value={pageNo}
-            onChange={setPageNo}
-            placeholder="Add page number here (optional)"
+            placeholder="Add Bookname here"
+            value={title}
+            data={titles}
+            onChange={setTitle}
+            required
           />
-          <Space h="xs"></Space>
-          <Center><Button onClick={handleAdd}>Save</Button></Center>
-        </Modal>
-        <Space h="lg"></Space>
-        <Center>
-          <Title order={2}>Quotes</Title>
-        </Center>
-        <Card>
-          <Accordion defaultValue={"Notes"}>
-            {items.length > 0 ? (
-              <Accordion>
-                <DragDropContext
-                  onDragEnd={({ destination, source }) =>
-                    handlers.reorder({ from: source.index, to: destination?.index || null })
-                  }
-                >
-                  <Droppable key={items.id} droppableId="dnd-list" direction="vertical">
-                    {(provided) => (
-                      <div
-                        {...provided.droppableProps}
-                        ref={provided.innerRef}
-                      >
-                        {items}
-                        {provided.placeholder}
-                      </div>
-                    )}
-                  </Droppable>
-                </DragDropContext>
-              </Accordion>
-            ) : (
-              <Center><span>No quotes added yet. Start by adding a quote</span></Center>
-            )}
-          </Accordion>
-        </Card>
-        {favorites.length > 0 && (
+        </form>
+      </Container>
+      <Space h="md"></Space>
+      <Center>
+        <HoverCard width={200} shadow="md">
+          <HoverCard.Target>
+            <Button variant="default" onClick={handleAddQuote}>
+              Add a quote
+            </Button>
+          </HoverCard.Target>
+          <HoverCard.Dropdown>
+            <Text size="sm">
+              {title.trim() === ''
+                ? 'Please enter a book name before adding a quote.'
+                : 'You can now add a quote!'}
+            </Text>
+          </HoverCard.Dropdown>
+        </HoverCard>
+      </Center>
+      <Modal opened={opened} onClose={close} title="Enter description and page number">
+        <Textarea
+          radius={"md"}
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+          placeholder="Add description here"
+          required />
+        <Space h={"xs"} />
+        <NumberInput
+          radius={"md"}
+          value={pageNo}
+          onChange={setPageNo}
+          placeholder="Add page number here (optional)"
+        />
+        <Space h="xs"></Space>
+        <Center><Button onClick={handleAdd}>Save</Button></Center>
+      </Modal>
+      <Space h="lg"></Space>
+      <Center>
+        <Title order={2}>Quotes</Title>
+      </Center>
+      <Card>
+        <Accordion defaultValue={"Notes"}>
+          {items.length > 0 ? (
+            <Accordion>
+              <DragDropContext
+                onDragEnd={({ destination, source }) =>
+                  handlers.reorder({ from: source.index, to: destination?.index || null })
+                }
+              >
+                <Droppable key={items.id} droppableId="dnd-list" direction="vertical">
+                  {(provided) => (
+                    <div
+                      {...provided.droppableProps}
+                      ref={provided.innerRef}
+                    >
+                      {items}
+                      {provided.placeholder}
+                    </div>
+                  )}
+                </Droppable>
+              </DragDropContext>
+            </Accordion>
+          ) : (
+            <Center><span>No quotes added yet. Start by adding a quote</span></Center>
+          )}
+        </Accordion>
+      </Card>
+      {favorites.length > 0 && (
+        <div>
+          <Space h="lg"></Space>
           <Center>
             <Button variant="default" onClick={handleOpenFavorite}>
               Open Favorites
             </Button>
           </Center>
-        )}
-        <Modal opened={openFav} onClose={close_fav} title="Favorites" fullScreen radius={0}
-          transitionProps={{ transition: 'fade', duration: 200 }}>
-          <List type="ordered" spacing="sm">
-            {favorites.map((item) => (
-              <Card key={item.id}
-                withBorder shadow="sm"
-                radius="lg"
-                style={{ marginBottom: "10px" }}>
-                <List.Item key={item.id}>
-                  <Box>
-                    <Menu withinPortal position="bottom-start" withArrow>
-                      <Menu.Target>
-                        <div>
-                          <em>{item.quoteDescription} </em>
-                          <span style={{ fontStyle: "italic", color: "#888" }}>
-                            — {item.title}, p. {item.pageNo}
-                          </span>
-                        </div>
-                      </Menu.Target>
-                      <Menu.Dropdown>
-                        <Menu.Item onClick={() => handleDeleteFavorite(item.id)}>
-                          Delete
-                        </Menu.Item>
-                      </Menu.Dropdown>
-                    </Menu>
-                  </Box>
-                </List.Item>
-              </Card>
-            ))}
-          </List>
-        </Modal>
-        <Modal opened={openEditModal} onClose={close_edit} title="Enter description and page number">
-          <Textarea
-            radius={"md"}
-            value={editTitle}
-            onChange={(e) => setEditTitle(e.target.value)}
-            placeholder="Edit title here"
-            required />
-          <Space h={"xs"} />
-          <Textarea
-            radius={"md"}
-            value={editText}
-            onChange={(e) => setEditText(e.target.value)}
-            placeholder="Edit description here"
-            required />
-          <Space h={"xs"} />
-          <NumberInput
-            radius={"md"}
-            value={editPageNo}
-            onChange={setEditPageNo}
-            placeholder="Edit page number here (optional)"
-          />
-          <Space h="xs"></Space>
-          <Center><Button onClick={handleSaveQuote}>Save Changes</Button></Center>
-        </Modal>
-        <Box style={{ position: "absolute", top: "20px", left: "20px", zIndex: 1000 }}>
-          <Menu withinPortal position="bottom-start" withArrow>
-            <Menu.Target>
-              <Avatar
-                variant="transparent"
-                radius={"xl"}
-              />
-            </Menu.Target>
-            <Menu.Dropdown>
-              <Menu.Item icon={<IconLogin2 size={14} />} onClick={open_auth} disabled>
-                Sign In / Register
-              </Menu.Item>
-            </Menu.Dropdown>
-          </Menu>
-        </Box>
-        <AuthenticationForm opened={openAuthentication} onClose={close_auth} />
-        <ThemeSwitch />
-        <Notifications position="top-right" zIndex={1000} />
-      </MantineProvider>
+        </div>
+      )}
+      <Modal
+        opened={openFav}
+        onClose={close_fav}
+        title="Favorites"
+        size={"auto"}
+        transitionProps={{ transition: 'fade', duration: 200 }}
+      >
+        <List type="ordered" spacing="sm">
+          {favorites.map((item) => (
+            <Card key={item.id}
+              withBorder shadow="sm"
+              radius="lg"
+              style={{ marginBottom: "10px" }}>
+              <List.Item key={item.id}>
+                <Box>
+                  <Menu withinPortal position="bottom-start" withArrow>
+                    <Menu.Target>
+                      <div>
+                        <em>{item.quoteDescription} </em>
+                        <span style={{ fontStyle: "italic", color: "#888" }}>
+                          — {item.title}, p. {item.pageNo}
+                        </span>
+                      </div>
+                    </Menu.Target>
+                    <Menu.Dropdown>
+                      <Menu.Item onClick={() => handleDeleteFavorite(item.id)}>
+                        Delete
+                      </Menu.Item>
+                    </Menu.Dropdown>
+                  </Menu>
+                </Box>
+              </List.Item>
+            </Card>
+          ))}
+        </List>
+      </Modal>
+      <Modal opened={openEditModal} onClose={close_edit} title="Enter description and page number">
+        <Textarea
+          radius={"md"}
+          value={editTitle}
+          onChange={(e) => setEditTitle(e.target.value)}
+          placeholder="Edit title here"
+          required />
+        <Space h={"xs"} />
+        <Textarea
+          radius={"md"}
+          value={editText}
+          onChange={(e) => setEditText(e.target.value)}
+          placeholder="Edit description here"
+          required />
+        <Space h={"xs"} />
+        <NumberInput
+          radius={"md"}
+          value={editPageNo}
+          onChange={setEditPageNo}
+          placeholder="Edit page number here (optional)"
+        />
+        <Space h="xs"></Space>
+        <Center><Button onClick={handleSaveQuote}>Save Changes</Button></Center>
+      </Modal>
+      <Box style={{ position: "absolute", top: "20px", left: "20px", zIndex: 1000 }}>
+        <Menu withinPortal position="bottom-start" withArrow>
+          <Menu.Target>
+            <Avatar
+              variant="transparent"
+              radius={"xl"}
+            />
+          </Menu.Target>
+          <Menu.Dropdown>
+            <Menu.Item icon={<IconLogin2 size={14} />} onClick={open_auth} disabled>
+              Sign In / Register
+            </Menu.Item>
+          </Menu.Dropdown>
+        </Menu>
+      </Box>
+      <AuthenticationForm opened={openAuthentication} onClose={close_auth} />
+      <ThemeSwitch />
+      <Notifications position="top-right" zIndex={1000} />
+    </MantineProvider>
   )
 }
 

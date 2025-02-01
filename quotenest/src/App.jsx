@@ -3,7 +3,6 @@ import '@mantine/core/styles.css';
 import '@mantine/notifications/styles.css';
 import classes from './DndList.module.css';
 import cx from 'clsx';
-import ThemeSwitch from "./theme/ThemeSwitch";
 
 import {
   MantineProvider,
@@ -26,6 +25,8 @@ import {
   Container,
   Menu,
   Avatar,
+  useMantineColorScheme,
+  useComputedColorScheme
 } from "@mantine/core";
 import { useListState } from '@mantine/hooks';
 import { useDebouncedValue, useDisclosure } from "@mantine/hooks";
@@ -34,6 +35,20 @@ import { notifications, Notifications } from '@mantine/notifications';
 import { DragDropContext, Draggable, Droppable } from '@hello-pangea/dnd';
 import { AuthenticationForm } from "./auth/AuthenticationForm";
 
+function ThemeSwitcher() {
+  const { colorScheme, setColorScheme } = useMantineColorScheme();
+  const computedColorScheme = useComputedColorScheme("light", { getInitialValueInEffect: true });
+
+  const handleThemeSwitch = () => {
+    setColorScheme(computedColorScheme === "light" ? "dark" : "light");
+  };
+
+  return (
+    <Menu.Item onClick={handleThemeSwitch}>
+      {colorScheme === "light" ? "Dark Mode" : "Light Mode"}
+    </Menu.Item>
+  );
+}
 
 const theme = createTheme({
 
@@ -154,7 +169,7 @@ function App() {
   }, [favorites])
 
   {/* Theme */ }
-  const [colorScheme, setColorScheme] = useState('light');
+  const [colorScheme, setColorScheme] = useState("light")
 
   const handleAdd = () => {
     if (title.trim() === "" || text.trim() === "") return;
@@ -514,11 +529,14 @@ function App() {
       <Modal
         opened={openFav}
         onClose={close_fav}
-        title="Favorites"
-        size={"auto"}
-        centered
+        fullScreen
+        radius={0}
         transitionProps={{ transition: 'fade', duration: 200 }}
       >
+        <Center>
+          <Modal.Title>Favorites</Modal.Title>
+        </Center>
+        <Space h="lg"></Space>
         <List type="ordered" spacing="sm">
           {favorites.map((item) => (
             <Card key={item.id}
@@ -584,11 +602,11 @@ function App() {
             <Menu.Item icon={<IconLogin2 size={14} />} onClick={open_auth} disabled>
               Sign In / Register
             </Menu.Item>
+            <ThemeSwitcher />
           </Menu.Dropdown>
         </Menu>
       </Box>
       <AuthenticationForm opened={openAuthentication} onClose={close_auth} />
-      <ThemeSwitch />
       <Notifications position="top-right" zIndex={1000} />
     </MantineProvider>
   )

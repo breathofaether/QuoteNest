@@ -30,7 +30,7 @@ import {
 } from "@mantine/core";
 import { useListState } from '@mantine/hooks';
 import { useDebouncedValue, useDisclosure } from "@mantine/hooks";
-import { IconTrashFilled, IconX, IconCheck, IconLogin2, IconUser, } from '@tabler/icons-react'
+import { IconTrashFilled, IconX, IconCheck, IconLogin2, } from '@tabler/icons-react'
 import { notifications, Notifications } from '@mantine/notifications';
 import { DragDropContext, Draggable, Droppable } from '@hello-pangea/dnd';
 import { AuthenticationForm } from "./auth/AuthenticationForm";
@@ -590,10 +590,14 @@ function App() {
         <Space h="xs"></Space>
         <Center><Button onClick={handleSaveQuote}>Save Changes</Button></Center>
       </Modal>
-      <Box style={{ position: "absolute", top: "30px", left: "20px", bottom: "10px", zIndex: 1000 }}>
+      <Box style={{ position: "absolute", top: "18px", left: "20px", bottom: "10px", zIndex: 1000 }}>
         <Menu withinPortal position="bottom-start" withArrow>
           <Menu.Target>
-            <IconUser />
+            <Avatar
+              variant="transparent"
+              radius={"xl"}
+              size={"lg"}
+            />
           </Menu.Target>
           <Menu.Dropdown>
             <Menu.Item icon={<IconLogin2 size={14} />} onClick={open_auth} disabled>

@@ -590,7 +590,7 @@ function App() {
         <Space h="xs"></Space>
         <Center><Button onClick={handleSaveQuote}>Save Changes</Button></Center>
       </Modal>
-      <Box style={{ position: "absolute", top: "28px", left: "20px", bottom: "10px", zIndex: 1000 }}>
+      <Box style={{ position: "absolute", top: "30px", left: "20px", bottom: "10px", zIndex: 1000 }}>
         <Menu withinPortal position="bottom-start" withArrow>
           <Menu.Target>
             <IconUser />

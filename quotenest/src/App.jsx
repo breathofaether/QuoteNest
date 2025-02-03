@@ -624,7 +624,7 @@ const list_items = lists.flatMap((list) =>
 
       {/* Search Bar */}
       <Container>
-        <Button variant="default" radius="lg" size="sm" onClick={spotlight.open} style={{ position: "absolute", top: "16px", right: "45px", zIndex: 1000 }}>
+        <Button variant="default" radius="lg" size="sm" onClick={spotlight.open} style={{ position: "absolute", top: "16px", right: "50px", zIndex: 1000 }}>
           <IconSearch size={14} />
         </Button>
         <Spotlight

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react"
 import '@mantine/core/styles.css';
 import '@mantine/notifications/styles.css';
+import '@mantine/spotlight/styles.css';
 import classes from './DndList.module.css';
 import cx from 'clsx';
 
@@ -26,12 +27,15 @@ import {
   Menu,
   Avatar,
   useMantineColorScheme,
-  useComputedColorScheme
+  useComputedColorScheme,
+  Drawer,
 } from "@mantine/core";
+import { Spotlight, spotlight } from '@mantine/spotlight';
 import { useListState } from '@mantine/hooks';
 import { useDebouncedValue, useDisclosure } from "@mantine/hooks";
-import { IconTrashFilled, IconX, IconCheck, IconLogin2, } from '@tabler/icons-react'
 import { notifications, Notifications } from '@mantine/notifications';
+
+import { IconTrashFilled, IconX, IconCheck, IconLogin2, IconSearch, IconBook, } from '@tabler/icons-react'
 import { DragDropContext, Draggable, Droppable } from '@hello-pangea/dnd';
 import { AuthenticationForm } from "./auth/AuthenticationForm";
 
@@ -154,7 +158,18 @@ function App() {
   const [debouncedSearch] = useDebouncedValue(title, 1000)
   const titles = lists.map((item) => item.title).filter((title) => title.toLowerCase().includes(debouncedSearch.toLocaleLowerCase()));
 
-  {/* Drag n Drop */ }
+  { /* Spotlight filter */ }
+const list_items = lists.flatMap((list) =>
+  list.quotes.map((quote) => ({
+    id: quote.id, 
+    label: quote.description, 
+    description: `${list.title}, p. ${quote.pageNo}`, 
+    onClick: () => console.log(`Selected quote: "${quote.description}" from "${list.title}"`), 
+  }))
+);
+
+
+  { /* Drag n Drop */ }
   const [state, handlers] = useListState(lists)
   useEffect(() => {
     if (lists !== state) handlers.setState(lists);
@@ -435,14 +450,13 @@ function App() {
   return (
     <MantineProvider theme={{ ...theme, colorScheme }} defaultColorScheme={colorScheme} withGlobalStyles withNormalizeCSS>
       <Space h="lg"></Space>
-      <Center>
-        <Title order={1}>QuoteNest</Title>
-      </Center>
+        <Text size="xl" style={{position: "relative", top: "0px", left: "10px", zIndex: 1000}}>QuoteNest</Text>
       <Space h="md"></Space>
       <Container size={"sm"}>
         <form>
           <Autocomplete
             radius={"md"}
+            size={"md"}
             placeholder="Add Bookname here"
             value={title}
             data={titles}
@@ -489,6 +503,7 @@ function App() {
       <Center>
         <Title order={2}>Quotes</Title>
       </Center>
+      <Space h="sm"></Space>
       <Card>
         <Accordion defaultValue={"Notes"}>
           {items.length > 0 ? (
@@ -526,16 +541,13 @@ function App() {
           </Center>
         </div>
       )}
-      <Modal
+      <Drawer
+        position="bottom"
+        size={"lg"}
         opened={openFav}
         onClose={close_fav}
-        fullScreen
-        radius={0}
         transitionProps={{ transition: 'fade', duration: 200 }}
       >
-        <Center>
-          <Modal.Title>Favorites</Modal.Title>
-        </Center>
         <Space h="lg"></Space>
         <List type="ordered" spacing="sm">
           {favorites.map((item) => (
@@ -565,7 +577,7 @@ function App() {
             </Card>
           ))}
         </List>
-      </Modal>
+      </Drawer>
       <Modal opened={openEditModal} onClose={close_edit} title="Enter description and page number">
         <Textarea
           radius={"md"}
@@ -590,12 +602,14 @@ function App() {
         <Space h="xs"></Space>
         <Center><Button onClick={handleSaveQuote}>Save Changes</Button></Center>
       </Modal>
-      <Box style={{ position: "absolute", top: "25px", left: "10px", bottom: "10px", zIndex: 1000 }}>
+
+      {/* User menu */}
+      <Box style={{ position: "absolute", top: "15px", right: "10px", zIndex: 1000 }}>
         <Menu withinPortal position="bottom-start" withArrow>
           <Menu.Target>
             <Avatar
-              variant="transparent"
-              radius={"xl"}
+              variant="default"
+              radius={"lg"}
               size={"md"}
             />
           </Menu.Target>
@@ -607,6 +621,23 @@ function App() {
           </Menu.Dropdown>
         </Menu>
       </Box>
+
+      {/* Search Bar */}
+      <Container>
+        <Button variant="default" radius="lg" size="sm" onClick={spotlight.open} style={{ position: "absolute", top: "16px", right: "45px", zIndex: 1000 }}>
+          <IconSearch size={14} />
+        </Button>
+        <Spotlight
+          actions={list_items}
+          nothingFound="Nothing found..."
+          highlightQuery
+          searchProps={{
+            leftSection: <IconSearch size={20} stroke={1.5} />,
+            placeholder: 'Search...',
+          }}
+        />
+      </Container>
+
       <AuthenticationForm opened={openAuthentication} onClose={close_auth} />
       <Notifications position="top-right" zIndex={1000} />
     </MantineProvider>

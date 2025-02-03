@@ -35,21 +35,21 @@ import { useListState } from '@mantine/hooks';
 import { useDebouncedValue, useDisclosure } from "@mantine/hooks";
 import { notifications, Notifications } from '@mantine/notifications';
 
-import { IconTrashFilled, IconX, IconCheck, IconLogin2, IconSearch, IconBook, } from '@tabler/icons-react'
+import { IconTrashFilled, IconX, IconCheck, IconLogin2, IconSearch, } from '@tabler/icons-react'
 import { DragDropContext, Draggable, Droppable } from '@hello-pangea/dnd';
 import { AuthenticationForm } from "./auth/AuthenticationForm";
 
 function ThemeSwitcher() {
-  const { colorScheme, setColorScheme } = useMantineColorScheme();
+  const { colorScheme, setColorScheme } = useMantineColorScheme({ keepTransitions: true });
   const computedColorScheme = useComputedColorScheme("light", { getInitialValueInEffect: true });
 
   const handleThemeSwitch = () => {
     setColorScheme(computedColorScheme === "light" ? "dark" : "light");
   };
-
+  
   return (
     <Menu.Item onClick={handleThemeSwitch}>
-      {colorScheme === "light" ? "Dark Mode" : "Light Mode"}
+      {colorScheme === "light" ? "Dark Theme" : "Light Theme"}
     </Menu.Item>
   );
 }
@@ -159,14 +159,14 @@ function App() {
   const titles = lists.map((item) => item.title).filter((title) => title.toLowerCase().includes(debouncedSearch.toLocaleLowerCase()));
 
   { /* Spotlight filter */ }
-const list_items = lists.flatMap((list) =>
-  list.quotes.map((quote) => ({
-    id: quote.id, 
-    label: quote.description, 
-    description: `${list.title}, p. ${quote.pageNo}`, 
-    onClick: () => console.log(`Selected quote: "${quote.description}" from "${list.title}"`), 
-  }))
-);
+  const list_items = lists.flatMap((list) =>
+    list.quotes.map((quote) => ({
+      id: quote.id,
+      label: quote.description,
+      description: `${list.title}, p. ${quote.pageNo}`,
+      onClick: () => console.log(`Selected quote: "${quote.description}" from "${list.title}"`),
+    }))
+  );
 
 
   { /* Drag n Drop */ }
@@ -210,7 +210,7 @@ const list_items = lists.flatMap((list) =>
         {
           id: Date.now(),
           title: title,
-          quotes: [{ id: Date.now(), description: text, pageNo: pageNo || " N/A" }]
+          quotes: [{ id: Date.now(), description: text, pageNo: pageNo || " N/A" }],
         }
       ])
 
@@ -450,7 +450,7 @@ const list_items = lists.flatMap((list) =>
   return (
     <MantineProvider theme={{ ...theme, colorScheme }} defaultColorScheme={colorScheme} withGlobalStyles withNormalizeCSS>
       <Space h="lg"></Space>
-        <Text size="xl" style={{position: "relative", top: "0px", left: "10px", zIndex: 1000}}>QuoteNest</Text>
+      <Text size="xl" style={{ position: "relative", top: "0px", left: "10px", zIndex: 1000 }}>QuoteNest</Text>
       <Space h="md"></Space>
       <Container size={"sm"}>
         <form>
@@ -568,7 +568,7 @@ const list_items = lists.flatMap((list) =>
                     </Menu.Target>
                     <Menu.Dropdown>
                       <Menu.Item onClick={() => handleDeleteFavorite(item.id)}>
-                        Delete
+                        Delete from favorites
                       </Menu.Item>
                     </Menu.Dropdown>
                   </Menu>

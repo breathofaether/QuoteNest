@@ -30,6 +30,7 @@ import {
   useComputedColorScheme,
   Drawer,
 } from "@mantine/core";
+import { ModalsProvider, modals } from '@mantine/modals';
 import { Spotlight, spotlight } from '@mantine/spotlight';
 import { useListState } from '@mantine/hooks';
 import { useDebouncedValue, useDisclosure, useClipboard } from "@mantine/hooks";
@@ -334,6 +335,26 @@ function App() {
     }
   }
 
+  const openDeleteModalForBook = (id) =>
+    modals.openConfirmModal({
+      title: 'Remove Book from Collection',
+      centered: true,
+      children: (
+        <Text size="sm" fw={500}> 
+          Are you sure you want to delete this book? <br/>
+          This action cannot be undone and all associated quotes will be permanently deleted.
+        </Text>
+      ),
+      labels: { confirm: 'Delete book', cancel: "No don't delete it" },
+      confirmProps: { color: 'red' },
+      onCancel: () => notifications.show({
+        title: "Deletion canceled.",
+        message: "Book deletion canceled. The book remains in your list.",
+        autoClose: 2000,
+      }),
+      onConfirm: () => handleDeleteBook(id),
+    });
+
   const handleDeleteBook = (id) => {
     try {
       setLists((prevList) => prevList.filter((list) => list.id !== id));
@@ -407,7 +428,7 @@ function App() {
                 <Button
                   color="red"
                   variant="light"
-                  onClick={() => handleDeleteBook(item.id)}
+                  onClick={() => openDeleteModalForBook(item.id)}
                   style={{ marginLeft: "auto" }}
                 >
                   <IconTrashFilled size={14} />
@@ -461,197 +482,199 @@ function App() {
 
   return (
     <MantineProvider theme={{ ...theme, colorScheme }} defaultColorScheme={colorScheme} withGlobalStyles withNormalizeCSS>
-      <Space h="lg"></Space>
-      <Text size="xl" style={{ position: "relative", top: "0px", left: "10px", zIndex: 1000 }}>QuoteNest</Text>
-      <Space h="md"></Space>
-      <Container size={"sm"}>
-        <form>
-          <Autocomplete
-            radius={"md"}
-            size={"md"}
-            placeholder="Add Bookname here"
-            value={title}
-            data={titles}
-            onChange={setTitle}
-            required
-          />
-        </form>
-      </Container>
-      <Space h="md"></Space>
-      <Center>
-        <HoverCard width={200} shadow="md">
-          <HoverCard.Target>
-            <Button variant="default" onClick={handleAddQuote}>
-              Add a quote
-            </Button>
-          </HoverCard.Target>
-          <HoverCard.Dropdown>
-            <Text size="sm">
-              {title.trim() === ''
-                ? 'Please enter a book name before adding a quote.'
-                : 'You can now add a quote!'}
-            </Text>
-          </HoverCard.Dropdown>
-        </HoverCard>
-      </Center>
-      <Modal opened={opened} onClose={close} title="Enter description and page number">
-        <Textarea
-          radius={"md"}
-          value={text}
-          onChange={(e) => setText(e.target.value)}
-          placeholder="Add description here"
-          required />
-        <Space h={"xs"} />
-        <NumberInput
-          radius={"md"}
-          value={pageNo}
-          onChange={setPageNo}
-          placeholder="Add page number here (optional)"
-        />
-        <Space h="xs"></Space>
-        <Center><Button onClick={handleAdd}>Save</Button></Center>
-      </Modal>
-      <Space h="lg"></Space>
-      <Center>
-        <Title order={2}>Quotes</Title>
-      </Center>
-      <Space h="sm"></Space>
-      <Card>
-        <Accordion defaultValue={"Notes"}>
-          {items.length > 0 ? (
-            <Accordion>
-              <DragDropContext
-                onDragEnd={({ destination, source }) =>
-                  handlers.reorder({ from: source.index, to: destination?.index || null })
-                }
-              >
-                <Droppable key={items.id} droppableId="dnd-list" direction="vertical">
-                  {(provided) => (
-                    <div
-                      {...provided.droppableProps}
-                      ref={provided.innerRef}
-                    >
-                      {items}
-                      {provided.placeholder}
-                    </div>
-                  )}
-                </Droppable>
-              </DragDropContext>
-            </Accordion>
-          ) : (
-            <Center><span>No quotes added yet. Start by adding a quote</span></Center>
-          )}
-        </Accordion>
-      </Card>
-      {favorites.length > 0 && (
-        <div>
-          <Space h="lg"></Space>
-          <Center>
-            <Button variant="default" onClick={handleOpenFavorite}>
-              Open Favorites
-            </Button>
-          </Center>
-        </div>
-      )}
-      <Drawer
-        position="bottom"
-        size={"lg"}
-        opened={openFav}
-        onClose={close_fav}
-        transitionProps={{ transition: 'fade', duration: 200 }}
-      >
+      <ModalsProvider radius={"lg"}>
         <Space h="lg"></Space>
-        <List type="ordered" spacing="sm">
-          {favorites.map((item) => (
-            <Card key={item.id}
-              withBorder shadow="sm"
-              radius="lg"
-              style={{ marginBottom: "10px" }}>
-              <List.Item key={item.id}>
-                <Box>
-                  <Menu withinPortal position="bottom-start" withArrow>
-                    <Menu.Target>
-                      <div>
-                        <em>{item.quoteDescription} </em>
-                        <span style={{ fontStyle: "italic", color: "#888" }}>
-                          — {item.title}, p. {item.pageNo}
-                        </span>
-                      </div>
-                    </Menu.Target>
-                    <Menu.Dropdown>
-                      <Menu.Item onClick={() => handleDeleteFavorite(item.id)}>
-                        Delete from favorites
-                      </Menu.Item>
-                    </Menu.Dropdown>
-                  </Menu>
-                </Box>
-              </List.Item>
-            </Card>
-          ))}
-        </List>
-      </Drawer>
-      <Modal opened={openEditModal} onClose={close_edit} title="Enter description and page number">
-        <Textarea
-          radius={"md"}
-          value={editTitle}
-          onChange={(e) => setEditTitle(e.target.value)}
-          placeholder="Edit title here"
-          required />
-        <Space h={"xs"} />
-        <Textarea
-          radius={"md"}
-          value={editText}
-          onChange={(e) => setEditText(e.target.value)}
-          placeholder="Edit description here"
-          required />
-        <Space h={"xs"} />
-        <NumberInput
-          radius={"md"}
-          value={editPageNo}
-          onChange={setEditPageNo}
-          placeholder="Edit page number here (optional)"
-        />
-        <Space h="xs"></Space>
-        <Center><Button onClick={handleSaveQuote}>Save Changes</Button></Center>
-      </Modal>
-
-      {/* User menu */}
-      <Box style={{ position: "absolute", top: "15px", right: "10px", zIndex: 1000 }}>
-        <Menu withinPortal position="bottom-start" withArrow>
-          <Menu.Target>
-            <Avatar
-              variant="default"
-              radius={"lg"}
+        <Text size="xl" style={{ position: "relative", top: "0px", left: "10px", zIndex: 1000 }}>QuoteNest</Text>
+        <Space h="md"></Space>
+        <Container size={"sm"}>
+          <form>
+            <Autocomplete
+              radius={"md"}
               size={"md"}
+              placeholder="Add Bookname here"
+              value={title}
+              data={titles}
+              onChange={setTitle}
+              required
             />
-          </Menu.Target>
-          <Menu.Dropdown>
-            <Menu.Item icon={<IconLogin2 size={14} />} onClick={open_auth} disabled>
-              Sign In / Register
-            </Menu.Item>
-            <ThemeSwitcher />
-          </Menu.Dropdown>
-        </Menu>
-      </Box>
-
-      {/* Search Bar */}
-      <Container>
-        <Button variant="default" radius="lg" size="sm" onClick={spotlight.open} style={{ position: "absolute", top: "16px", right: "50px", zIndex: 1000 }}>
-          <IconSearch size={14} />
-        </Button>
-        <Spotlight
-          actions={list_items}
-          nothingFound="Nothing found..."
-          highlightQuery
-          searchProps={{
-            leftSection: <IconSearch size={20} stroke={1.5} />,
-            placeholder: 'Search...',
-          }}
-        />
-      </Container>
-
-      <AuthenticationForm opened={openAuthentication} onClose={close_auth} />
-      <Notifications position="top-right" zIndex={1000} radius="lg"/>
+          </form>
+        </Container>
+        <Space h="md"></Space>
+        <Center>
+          <HoverCard width={200} shadow="md">
+            <HoverCard.Target>
+              <Button variant="default" onClick={handleAddQuote}>
+                Add a quote
+              </Button>
+            </HoverCard.Target>
+            <HoverCard.Dropdown>
+              <Text size="sm">
+                {title.trim() === ''
+                  ? 'Please enter a book name before adding a quote.'
+                  : 'You can now add a quote!'}
+              </Text>
+            </HoverCard.Dropdown>
+          </HoverCard>
+        </Center>
+        <Modal opened={opened} onClose={close} title="Enter description and page number">
+          <Textarea
+            radius={"md"}
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            placeholder="Add description here"
+            required />
+          <Space h={"xs"} />
+          <NumberInput
+            radius={"md"}
+            value={pageNo}
+            onChange={setPageNo}
+            placeholder="Add page number here (optional)"
+          />
+          <Space h="xs"></Space>
+          <Center><Button onClick={handleAdd}>Save</Button></Center>
+        </Modal>
+        <Space h="lg"></Space>
+        <Center>
+          <Title order={2}>Quotes</Title>
+        </Center>
+        <Space h="sm"></Space>
+        <Card>
+          <Accordion defaultValue={"Notes"}>
+            {items.length > 0 ? (
+              <Accordion>
+                <DragDropContext
+                  onDragEnd={({ destination, source }) =>
+                    handlers.reorder({ from: source.index, to: destination?.index || null })
+                  }
+                >
+                  <Droppable key={items.id} droppableId="dnd-list" direction="vertical">
+                    {(provided) => (
+                      <div
+                        {...provided.droppableProps}
+                        ref={provided.innerRef}
+                      >
+                        {items}
+                        {provided.placeholder}
+                      </div>
+                    )}
+                  </Droppable>
+                </DragDropContext>
+              </Accordion>
+            ) : (
+              <Center><span>No quotes added yet. Start by adding a quote</span></Center>
+            )}
+          </Accordion>
+        </Card>
+        {favorites.length > 0 && (
+          <div>
+            <Space h="lg"></Space>
+            <Center>
+              <Button variant="default" onClick={handleOpenFavorite}>
+                Open Favorites
+              </Button>
+            </Center>
+          </div>
+        )}
+        <Drawer
+          position="bottom"
+          size={"lg"}
+          opened={openFav}
+          onClose={close_fav}
+          transitionProps={{ transition: 'fade', duration: 200 }}
+        >
+          <Space h="lg"></Space>
+          <List type="ordered" spacing="sm">
+            {favorites.map((item) => (
+              <Card key={item.id}
+                withBorder shadow="sm"
+                radius="lg"
+                style={{ marginBottom: "10px" }}>
+                <List.Item key={item.id}>
+                  <Box>
+                    <Menu withinPortal position="bottom-start" withArrow>
+                      <Menu.Target>
+                        <div>
+                          <em>{item.quoteDescription} </em>
+                          <span style={{ fontStyle: "italic", color: "#888" }}>
+                            — {item.title}, p. {item.pageNo}
+                          </span>
+                        </div>
+                      </Menu.Target>
+                      <Menu.Dropdown>
+                        <Menu.Item onClick={() => handleDeleteFavorite(item.id)}>
+                          Delete from favorites
+                        </Menu.Item>
+                      </Menu.Dropdown>
+                    </Menu>
+                  </Box>
+                </List.Item>
+              </Card>
+            ))}
+          </List>
+        </Drawer>
+        <Modal opened={openEditModal} onClose={close_edit} title="Enter description and page number">
+          <Textarea
+            radius={"md"}
+            value={editTitle}
+            onChange={(e) => setEditTitle(e.target.value)}
+            placeholder="Edit title here"
+            required />
+          <Space h={"xs"} />
+          <Textarea
+            radius={"md"}
+            value={editText}
+            onChange={(e) => setEditText(e.target.value)}
+            placeholder="Edit description here"
+            required />
+          <Space h={"xs"} />
+          <NumberInput
+            radius={"md"}
+            value={editPageNo}
+            onChange={setEditPageNo}
+            placeholder="Edit page number here (optional)"
+          />
+          <Space h="xs"></Space>
+          <Center><Button onClick={handleSaveQuote}>Save Changes</Button></Center>
+        </Modal>
+        {/* User menu */}
+        <Box style={{ position: "absolute", top: "15px", right: "10px", zIndex: 1000 }}>
+          <Menu withinPortal position="bottom-start" withArrow>
+            <Menu.Target>
+              <Avatar
+                variant="default"
+                radius={"lg"}
+                size={"md"}
+              />
+            </Menu.Target>
+            <Menu.Dropdown>
+              <Menu.Item icon={<IconLogin2 size={14} />} onClick={open_auth} disabled>
+                Sign In / Register
+              </Menu.Item>
+              <ThemeSwitcher />
+            </Menu.Dropdown>
+          </Menu>
+        </Box>
+        {/* Search Bar */}
+        <Container>
+          <Button variant="default" radius="lg" size="sm" onClick={spotlight.open} style={{ position: "absolute", top: "16px", right: "50px", zIndex: 1000 }}>
+            <IconSearch size={14} />
+          </Button>
+          <Spotlight
+            actions={list_items}
+            nothingFound="Nothing found..."
+            highlightQuery
+            scrollable
+            maxHeight={350}
+            searchProps={{
+              leftSection: <IconSearch size={20} stroke={1.5} />,
+              placeholder: 'Search...',
+            }}
+            radius={"lg"}
+          />
+        </Container>
+        <AuthenticationForm opened={openAuthentication} onClose={close_auth} />
+        <Notifications position="top-right" zIndex={1000} radius={"lg"}/>
+      </ModalsProvider>
     </MantineProvider>
   )
 }

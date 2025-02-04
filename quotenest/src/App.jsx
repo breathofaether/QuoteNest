@@ -32,10 +32,10 @@ import {
 } from "@mantine/core";
 import { Spotlight, spotlight } from '@mantine/spotlight';
 import { useListState } from '@mantine/hooks';
-import { useDebouncedValue, useDisclosure } from "@mantine/hooks";
+import { useDebouncedValue, useDisclosure, useClipboard } from "@mantine/hooks";
 import { notifications, Notifications } from '@mantine/notifications';
 
-import { IconTrashFilled, IconX, IconCheck, IconLogin2, IconSearch, } from '@tabler/icons-react'
+import { IconTrashFilled, IconX, IconCheck, IconLogin2, IconSearch, IconCopyCheck, } from '@tabler/icons-react'
 import { DragDropContext, Draggable, Droppable } from '@hello-pangea/dnd';
 import { AuthenticationForm } from "./auth/AuthenticationForm";
 
@@ -153,18 +153,20 @@ function App() {
   const [editTitle, setEditTitle] = useState("")
   const [editText, setEditText] = useState("")
   const [editPageNo, setEditPageNo] = useState("")
+  
 
   {/* Title suggestion filter */ }
   const [debouncedSearch] = useDebouncedValue(title, 1000)
   const titles = lists.map((item) => item.title).filter((title) => title.toLowerCase().includes(debouncedSearch.toLocaleLowerCase()));
 
   { /* Spotlight filter */ }
+  const clipboard = useClipboard({ timeout: 500 })
   const list_items = lists.flatMap((list) =>
     list.quotes.map((quote) => ({
       id: quote.id,
       label: quote.description,
       description: `${list.title}, p. ${quote.pageNo}`,
-      onClick: () => console.log(`Selected quote: "${quote.description}" from "${list.title}"`),
+      onClick: () => handleSpotLight(quote.description),
     }))
   );
 
@@ -199,7 +201,7 @@ function App() {
       notifications.show({
         title: "Quote Added",
         message: "Your quote has been successfully added to the book.",
-        autoClose: 3000,
+        autoClose: 2000,
         icon: <IconCheck size={16} />,
         color: "blue",
       });
@@ -218,7 +220,7 @@ function App() {
       notifications.show({
         title: "Book Added",
         message: "Your new book has been successfully added to the list!",
-        autoClose: 3000,
+        autoClose: 2000,
         icon: <IconCheck size={16} />,
         color: "green",
       });
@@ -276,8 +278,8 @@ function App() {
     notifications.show(
       {
         title: "Quote Updated",
-        message: "Your quote has been successfully updated in both lists and favorites.",
-        autoClose: 3000,
+        message: "Your quote has been successfully updated.",
+        autoClose: 2000,
         icon: <IconCheck size={16} />,
         color: "blue",
       }
@@ -305,7 +307,7 @@ function App() {
       notifications.show({
         title: "Quote Added",
         message: "Quote has been successfully added to the favorite list!",
-        autoClose: 3000,
+        autoClose: 2000,
         icon: <IconCheck size={16} />,
         color: "green",
       });
@@ -313,7 +315,7 @@ function App() {
       notifications.show({
         title: "Error",
         message: "Something went wrong. Please Try again",
-        autoClose: 3000,
+        autoClose: 2000,
         icon: <IconX size={16} />,
         color: "red",
       });
@@ -338,7 +340,7 @@ function App() {
       notifications.show({
         title: "Book Removed",
         message: "The selected book has been successfully deleted from your list.",
-        autoClose: 3000,
+        autoClose: 2000,
         icon: <IconCheck size={16} />,
         color: "teal",
       });
@@ -346,7 +348,7 @@ function App() {
       notifications.show({
         title: "Error",
         message: "Something went wrong. Please Try again",
-        autoClose: 3000,
+        autoClose: 2000,
         icon: <IconX size={16} />,
         color: "red",
       });
@@ -360,7 +362,7 @@ function App() {
     notifications.show({
       title: "Quote Removed",
       message: "The selected quote has been successfully deleted.",
-      autoClose: 3000,
+      autoClose: 2000,
       icon: <IconCheck size={16} />,
       color: "teal",
     });
@@ -368,6 +370,16 @@ function App() {
 
   const handleDeleteFavorite = (id) => {
     setFavorites((prevList) => prevList.filter((list) => list.id !== id));
+  }
+
+  const handleSpotLight = (description) => {
+    clipboard.copy(description);
+    notifications.show({
+      title: "Quote Copied!",
+      message: "The quote has been copied to your clipboard.",
+      autoClose: 2000,
+      icon: <IconCopyCheck size={16} />,
+    })
   }
 
   {/* List mapping */ }
@@ -639,7 +651,7 @@ function App() {
       </Container>
 
       <AuthenticationForm opened={openAuthentication} onClose={close_auth} />
-      <Notifications position="top-right" zIndex={1000} />
+      <Notifications position="top-right" zIndex={1000} radius="lg"/>
     </MantineProvider>
   )
 }

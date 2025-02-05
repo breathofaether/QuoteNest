@@ -31,14 +31,16 @@ import {
   Drawer,
   ActionIcon,
   ThemeIcon,
+  Affix,
+  Transition
 } from "@mantine/core";
 import { ModalsProvider, modals } from '@mantine/modals';
 import { Spotlight, spotlight } from '@mantine/spotlight';
-import { useListState } from '@mantine/hooks';
+import { useListState, useWindowScroll } from '@mantine/hooks';
 import { useDebouncedValue, useDisclosure, useClipboard } from "@mantine/hooks";
 import { notifications, Notifications } from '@mantine/notifications';
 
-import { IconTrashFilled, IconX, IconCheck, IconLogin2, IconSearch, IconCopyCheck, IconQuoteFilled, IconNote, IconQuotes, IconBook, } from '@tabler/icons-react'
+import { IconTrashFilled, IconX, IconCheck, IconLogin2, IconSearch, IconCopyCheck, IconQuoteFilled, IconQuotes, IconArrowUp, IconCirclePlusFilled, } from '@tabler/icons-react'
 import { DragDropContext, Draggable, Droppable } from '@hello-pangea/dnd';
 import { AuthenticationForm } from "./auth/AuthenticationForm";
 
@@ -190,6 +192,9 @@ function App() {
 
   {/* Theme */ }
   const [colorScheme, setColorScheme] = useState("light")
+
+  {/* Affix */ }
+  const [scroll, scrollTo] = useWindowScroll()
 
   const handleAdd = () => {
     if (title.trim() === "" || text.trim() === "") return;
@@ -422,8 +427,8 @@ function App() {
                   display: "flex",
                   justifyContent: "space-between",
                   alignItems: "center"
-                }}>
-
+                }}
+              >
                 <Accordion.Control icon={
                   <ThemeIcon size={24} radius={"xl"} color="bronze" variant="light">
                     <IconQuotes size={16} />
@@ -439,6 +444,16 @@ function App() {
                   style={{ marginLeft: "8px" }}
                 >
                   <IconTrashFilled size={14} />
+                </ActionIcon>
+                <ActionIcon
+                  radius={"lg"}
+                  size="lg"
+                  color="yellow"
+                  variant="light"
+                  onClick={() => {setTitle(item.title); handleAddQuote()}}
+                  style={{ marginLeft: "8px" }}
+                >
+                  <IconCirclePlusFilled size={14} />
                 </ActionIcon>
               </Box>
             </div>
@@ -666,7 +681,7 @@ function App() {
         </Box>
         {/* Search Bar */}
         <Container>
-          <ActionIcon variant="default" radius="xl" size={39} onClick={spotlight.open} style={{ position: "absolute", top: "14.5px", right: "50px", zIndex: 1000 }}>
+          <ActionIcon variant="default" radius="xl" size={39} onClick={spotlight.open} style={{ position: "absolute", top: "14.5px", right: "55px", zIndex: 1000 }}>
             <IconSearch size={16} />
           </ActionIcon>
           <Spotlight
@@ -682,8 +697,22 @@ function App() {
             radius={"lg"}
           />
         </Container>
+
         <AuthenticationForm opened={openAuthentication} onClose={close_auth} />
         <Notifications position="top-right" zIndex={1000} radius={"lg"} />
+        <Affix position={{ bottom: 20, right: 20 }}>
+          <Transition transition="slide-up" mounted={scroll.y > 0}>
+            {(transitionStyles) => (
+              <Button
+                leftSection={<IconArrowUp size={16} />}
+                style={transitionStyles}
+                onClick={() => scrollTo({ y: 0 })}
+              >
+                Scroll to top
+              </Button>
+            )}
+          </Transition>
+        </Affix>
       </ModalsProvider>
     </MantineProvider>
   )

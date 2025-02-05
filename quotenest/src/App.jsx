@@ -244,6 +244,13 @@ function App() {
     }
   };
 
+  const handleAddQuoteAccordion = (title) => {
+    setTitle(title)
+    if (title.trim() !== '') {
+      open();
+    }
+  };
+
   const handleEditQuote = (item, quote) => {
     setSelectedList(item)
     setSelectedQuote(quote)
@@ -450,7 +457,7 @@ function App() {
                   size="lg"
                   color="yellow"
                   variant="light"
-                  onClick={() => {setTitle(item.title); handleAddQuote()}}
+                  onClick={() => {handleAddQuoteAccordion(item.title)}}
                   style={{ marginLeft: "8px" }}
                 >
                   <IconCirclePlusFilled size={14} />

@@ -29,6 +29,8 @@ import {
   useMantineColorScheme,
   useComputedColorScheme,
   Drawer,
+  ActionIcon,
+  ThemeIcon,
 } from "@mantine/core";
 import { ModalsProvider, modals } from '@mantine/modals';
 import { Spotlight, spotlight } from '@mantine/spotlight';
@@ -36,7 +38,7 @@ import { useListState } from '@mantine/hooks';
 import { useDebouncedValue, useDisclosure, useClipboard } from "@mantine/hooks";
 import { notifications, Notifications } from '@mantine/notifications';
 
-import { IconTrashFilled, IconX, IconCheck, IconLogin2, IconSearch, IconCopyCheck, } from '@tabler/icons-react'
+import { IconTrashFilled, IconX, IconCheck, IconLogin2, IconSearch, IconCopyCheck, IconQuoteFilled, IconNote, IconQuotes, IconBook, } from '@tabler/icons-react'
 import { DragDropContext, Draggable, Droppable } from '@hello-pangea/dnd';
 import { AuthenticationForm } from "./auth/AuthenticationForm";
 
@@ -47,7 +49,7 @@ function ThemeSwitcher() {
   const handleThemeSwitch = () => {
     setColorScheme(computedColorScheme === "light" ? "dark" : "light");
   };
-  
+
   return (
     <Menu.Item onClick={handleThemeSwitch}>
       {colorScheme === "light" ? "Dark Theme" : "Light Theme"}
@@ -154,7 +156,7 @@ function App() {
   const [editTitle, setEditTitle] = useState("")
   const [editText, setEditText] = useState("")
   const [editPageNo, setEditPageNo] = useState("")
-  
+
 
   {/* Title suggestion filter */ }
   const [debouncedSearch] = useDebouncedValue(title, 1000)
@@ -340,8 +342,8 @@ function App() {
       title: 'Remove Book from Collection',
       centered: true,
       children: (
-        <Text size="sm" fw={500}> 
-          Are you sure you want to delete this book? <br/>
+        <Text size="sm" fw={500}>
+          Are you sure you want to delete this book? <br />
           This action cannot be undone and all associated quotes will be permanently deleted.
         </Text>
       ),
@@ -422,27 +424,35 @@ function App() {
                   alignItems: "center"
                 }}>
 
-                <Accordion.Control icon={"❝"}>
+                <Accordion.Control icon={
+                  <ThemeIcon size={24} radius={"xl"} color="bronze" variant="light">
+                    <IconQuotes size={16} />
+                  </ThemeIcon>}>
                   <Title key={item.id} order={4} style={{ lineHeight: 1.2 }}>{item.title}</Title>
                 </Accordion.Control>
-                <Button
+                <ActionIcon
+                  radius={"lg"}
+                  size="lg"
                   color="red"
                   variant="light"
                   onClick={() => openDeleteModalForBook(item.id)}
-                  style={{ marginLeft: "auto" }}
+                  style={{ marginLeft: "8px" }}
                 >
                   <IconTrashFilled size={14} />
-                </Button>
+                </ActionIcon>
               </Box>
             </div>
           )}
         </Draggable>
         <Accordion.Panel>
-          <List type="ordered" spacing="sm">
+          <List type="ordered" spacing="sm" icon={
+            <ThemeIcon size={24} radius={"xl"} color="teal" variant="light">
+              <IconQuoteFilled size={16} />
+            </ThemeIcon>}>
             {item.quotes.map((quote) => (
               <Card
                 key={quote.id}
-                withBorder shadow="sm"
+                withBorder shadow="lg"
                 radius="lg"
                 style={{ marginBottom: "10px" }}
               >
@@ -484,7 +494,7 @@ function App() {
     <MantineProvider theme={{ ...theme, colorScheme }} defaultColorScheme={colorScheme} withGlobalStyles withNormalizeCSS>
       <ModalsProvider radius={"lg"}>
         <Space h="lg"></Space>
-        <Text size="xl" style={{ position: "relative", top: "0px", left: "10px", zIndex: 1000 }}>QuoteNest</Text>
+        <Text size="xl" fw={700} style={{ position: "relative", top: "0px", left: "10px", zIndex: 1000 }}>QuoteNest</Text>
         <Space h="md"></Space>
         <Container size={"sm"}>
           <form>
@@ -647,7 +657,7 @@ function App() {
               />
             </Menu.Target>
             <Menu.Dropdown>
-              <Menu.Item icon={<IconLogin2 size={14} />} onClick={open_auth} disabled>
+              <Menu.Item icon={<IconLogin2 size={16} />} onClick={open_auth} disabled>
                 Sign In / Register
               </Menu.Item>
               <ThemeSwitcher />
@@ -656,9 +666,9 @@ function App() {
         </Box>
         {/* Search Bar */}
         <Container>
-          <Button variant="default" radius="lg" size="sm" onClick={spotlight.open} style={{ position: "absolute", top: "16px", right: "50px", zIndex: 1000 }}>
-            <IconSearch size={14} />
-          </Button>
+          <ActionIcon variant="default" radius="xl" size={39} onClick={spotlight.open} style={{ position: "absolute", top: "14.5px", right: "50px", zIndex: 1000 }}>
+            <IconSearch size={16} />
+          </ActionIcon>
           <Spotlight
             actions={list_items}
             nothingFound="Nothing found..."
@@ -673,7 +683,7 @@ function App() {
           />
         </Container>
         <AuthenticationForm opened={openAuthentication} onClose={close_auth} />
-        <Notifications position="top-right" zIndex={1000} radius={"lg"}/>
+        <Notifications position="top-right" zIndex={1000} radius={"lg"} />
       </ModalsProvider>
     </MantineProvider>
   )

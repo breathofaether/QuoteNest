@@ -39,9 +39,9 @@ import { Spotlight, spotlight } from '@mantine/spotlight';
 import { useListState, useWindowScroll } from '@mantine/hooks';
 import { useDebouncedValue, useDisclosure, useClipboard } from "@mantine/hooks";
 import { notifications, Notifications } from '@mantine/notifications';
-import {toast, Toaster } from 'react-hot-toast';
+import { toast, Toaster } from 'react-hot-toast';
 
-import { IconTrashFilled, IconX, IconCheck, IconLogin2, IconSearch, IconCopyCheck, IconQuoteFilled, IconQuotes, IconArrowUp, IconCirclePlusFilled, IconHeart, IconPencilCheck, } from '@tabler/icons-react'
+import { IconTrashFilled, IconX, IconCheck, IconLogin2, IconSearch, IconCopyCheck, IconQuoteFilled, IconQuotes, IconArrowUp, IconCirclePlusFilled, IconHeart, IconPencilCheck, IconArrowBackUp, } from '@tabler/icons-react'
 import { DragDropContext, Draggable, Droppable } from '@hello-pangea/dnd';
 import { AuthenticationForm } from "./auth/AuthenticationForm";
 
@@ -360,10 +360,9 @@ function App() {
       children: (
         <Text size="sm" fw={500}>
           Are you sure you want to delete this book? <br />
-          This action cannot be undone and all associated quotes will be permanently deleted.
         </Text>
       ),
-      labels: { confirm: 'Delete book', cancel: "No don't delete it" },
+      labels: { confirm: 'Delete book', cancel: "No, don't delete it" },
       confirmProps: { color: 'red' },
       onCancel: () => notifications.show({
         title: "Deletion canceled.",
@@ -375,6 +374,11 @@ function App() {
 
   const handleDeleteBook = (id) => {
     try {
+      let copyOfOldList = [...lists]
+      const handleTrigger = () => {
+        handleUndoDelete(copyOfOldList)
+        copyOfOldList = null;
+      }
       setLists((prevList) => prevList.filter((list) => list.id !== id));
       notifications.show({
         title: "Book Removed",
@@ -383,6 +387,13 @@ function App() {
         icon: <IconCheck size={16} />,
         color: "teal",
       });
+      const toastId = toast.custom(
+          <Button variant="default" onClick={() => { toast.remove(toastId); handleTrigger() }}>
+            <IconArrowBackUp size={16} /> 
+            <Space w="md" />
+            Undo
+          </Button>
+      )
     } catch (error) {
       notifications.show({
         title: "Error",
@@ -391,6 +402,12 @@ function App() {
         icon: <IconX size={16} />,
         color: "red",
       });
+    }
+  }
+
+  const handleUndoDelete = (oldList) => {
+    if (oldList) {
+      setLists(oldList)
     }
   }
 
@@ -524,6 +541,11 @@ function App() {
         <Space h="md"></Space>
         <Container size={"sm"}>
           <form>
+            {title.length > 0 && (
+              <ActionIcon variant="transparent" color="gray" radius="xl" size={39} onClick={() => setTitle("")} style={{ position: "absolute", top: "58px", right: "195px", zIndex: 1000 }}>
+                <IconX size={16} />
+              </ActionIcon>
+            )}
             <Autocomplete
               radius={"md"}
               size={"md"}
@@ -726,6 +748,7 @@ function App() {
             )}
           </Transition>
         </Affix>
+        <Toaster position="bottom-right" />
       </ModalsProvider>
     </MantineProvider>
   )

@@ -188,7 +188,7 @@ function App() {
 
   { /* Retrieve Lists */ }
   useEffect(() => {
-    localStorage.setItem("lists", JSON.stringify(lists))
+    localStorage.setItem("lists", JSON.stringify(state))
     setLists(state)
   }, [state])
   useEffect(() => {

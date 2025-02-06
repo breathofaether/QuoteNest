@@ -18,12 +18,17 @@
     "@mantine/notifications": "^7.16.2",
     "@mantine/nprogress": "^7.16.2",
     "@mantine/spotlight": "^7.16.2",
+    "@mui/material": "^6.4.3",
+    "@mui/styled-engine-sc": "^6.4.3",
     "@tabler/icons-react": "^3.29.0",
     "clsx": "^2.1.1",
     "firebase": "^11.2.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "react-toastify": "^11.0.3"
+    "react-hot-toast": "^2.5.1",
+    "react-native-snackbar": "^2.8.0",
+    "react-toastify": "^11.0.3",
+    "styled-components": "^6.1.15"
   },
   "devDependencies": {
     "@eslint/js": "^9.17.0",

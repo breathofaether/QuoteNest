@@ -39,10 +39,12 @@ import { Spotlight, spotlight } from '@mantine/spotlight';
 import { useListState, useWindowScroll } from '@mantine/hooks';
 import { useDebouncedValue, useDisclosure, useClipboard } from "@mantine/hooks";
 import { notifications, Notifications } from '@mantine/notifications';
+import {toast, Toaster } from 'react-hot-toast';
 
-import { IconTrashFilled, IconX, IconCheck, IconLogin2, IconSearch, IconCopyCheck, IconQuoteFilled, IconQuotes, IconArrowUp, IconCirclePlusFilled, } from '@tabler/icons-react'
+import { IconTrashFilled, IconX, IconCheck, IconLogin2, IconSearch, IconCopyCheck, IconQuoteFilled, IconQuotes, IconArrowUp, IconCirclePlusFilled, IconHeart, IconPencilCheck, } from '@tabler/icons-react'
 import { DragDropContext, Draggable, Droppable } from '@hello-pangea/dnd';
 import { AuthenticationForm } from "./auth/AuthenticationForm";
+
 
 function ThemeSwitcher() {
   const { colorScheme, setColorScheme } = useMantineColorScheme({ keepTransitions: true });
@@ -147,6 +149,8 @@ function App() {
   const [title, setTitle] = useState("")
   const [text, setText] = useState("")
   const [pageNo, setPageNo] = useState("")
+
+
   const [opened, { open, close }] = useDisclosure(false);
   const [openFav, { open: open_fav, close: close_fav }] = useDisclosure(false);
   const [openAuthentication, { open: open_auth, close: close_auth }] = useDisclosure(false);
@@ -295,8 +299,8 @@ function App() {
         title: "Quote Updated",
         message: "Your quote has been successfully updated.",
         autoClose: 2000,
-        icon: <IconCheck size={16} />,
-        color: "blue",
+        icon: <IconPencilCheck size={16} />,
+        color: "teal",
       }
     )
   }
@@ -323,8 +327,8 @@ function App() {
         title: "Quote Added",
         message: "Quote has been successfully added to the favorite list!",
         autoClose: 2000,
-        icon: <IconCheck size={16} />,
-        color: "green",
+        icon: <IconHeart size={16} />,
+        color: "red",
       });
     } catch (error) {
       notifications.show({
@@ -457,7 +461,7 @@ function App() {
                   size="lg"
                   color="yellow"
                   variant="light"
-                  onClick={() => {handleAddQuoteAccordion(item.title)}}
+                  onClick={() => { handleAddQuoteAccordion(item.title) }}
                   style={{ marginLeft: "8px" }}
                 >
                   <IconCirclePlusFilled size={14} />
@@ -548,7 +552,7 @@ function App() {
             </HoverCard.Dropdown>
           </HoverCard>
         </Center>
-        <Modal opened={opened} onClose={close} title="Enter description and page number">
+        <Drawer opened={opened} onClose={close} position="bottom" title="Enter description and page number">
           <Textarea
             radius={"md"}
             value={text}
@@ -564,7 +568,7 @@ function App() {
           />
           <Space h="xs"></Space>
           <Center><Button onClick={handleAdd}>Save</Button></Center>
-        </Modal>
+        </Drawer>
         <Space h="lg"></Space>
         <Center>
           <Title order={2}>Quotes</Title>
@@ -668,6 +672,7 @@ function App() {
           <Space h="xs"></Space>
           <Center><Button onClick={handleSaveQuote}>Save Changes</Button></Center>
         </Modal>
+
         {/* User menu */}
         <Box style={{ position: "absolute", top: "15px", right: "10px", zIndex: 1000 }}>
           <Menu withinPortal position="bottom-start" withArrow>
@@ -686,6 +691,7 @@ function App() {
             </Menu.Dropdown>
           </Menu>
         </Box>
+
         {/* Search Bar */}
         <Container>
           <ActionIcon variant="default" radius="xl" size={39} onClick={spotlight.open} style={{ position: "absolute", top: "14.5px", right: "55px", zIndex: 1000 }}>

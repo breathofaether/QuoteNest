@@ -189,7 +189,8 @@ function App() {
   { /* Retrieve Lists */ }
   useEffect(() => {
     localStorage.setItem("lists", JSON.stringify(lists))
-  }, [lists])
+    setLists(state)
+  }, [state])
   useEffect(() => {
     localStorage.setItem("fav_lists", JSON.stringify(favorites))
   }, [favorites])
@@ -541,11 +542,6 @@ function App() {
         <Space h="md"></Space>
         <Container size={"sm"}>
           <form>
-            {title.length > 0 && (
-              <ActionIcon variant="transparent" color="gray" radius="xl" size={39} onClick={() => setTitle("")} style={{ position: "absolute", top: "58px", right: "195px", zIndex: 1000 }}>
-                <IconX size={16} />
-              </ActionIcon>
-            )}
             <Autocomplete
               radius={"md"}
               size={"md"}
@@ -748,7 +744,7 @@ function App() {
             )}
           </Transition>
         </Affix>
-        <Toaster position="bottom-right" />
+        <Toaster position="bottom-center" />
       </ModalsProvider>
     </MantineProvider>
   )

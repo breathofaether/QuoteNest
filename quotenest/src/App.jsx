@@ -41,7 +41,7 @@ import { useDebouncedValue, useDisclosure, useClipboard } from "@mantine/hooks";
 import { notifications, Notifications } from '@mantine/notifications';
 import { toast, Toaster } from 'react-hot-toast';
 
-import { IconTrashFilled, IconX, IconCheck, IconLogin2, IconSearch, IconCopyCheck, IconQuoteFilled, IconQuotes, IconArrowUp, IconCirclePlusFilled, IconHeart, IconPencilCheck, IconArrowBackUp, } from '@tabler/icons-react'
+import { IconTrashFilled, IconX, IconCheck, IconLogin2, IconSearch, IconCopyCheck, IconQuoteFilled, IconQuotes, IconArrowUp, IconCirclePlusFilled, IconHeart, IconPencilCheck, IconArrowBackUp, IconMoonFilled, IconSunFilled, IconEdit, IconHeartFilled, IconTrash, } from '@tabler/icons-react'
 import { DragDropContext, Draggable, Droppable } from '@hello-pangea/dnd';
 import { AuthenticationForm } from "./auth/AuthenticationForm";
 
@@ -55,9 +55,9 @@ function ThemeSwitcher() {
   };
 
   return (
-    <Menu.Item onClick={handleThemeSwitch}>
-      {colorScheme === "light" ? "Dark Theme" : "Light Theme"}
-    </Menu.Item>
+    <ActionIcon onClick={handleThemeSwitch} variant="default" radius="xl" size={39} style={{ position: "absolute", top: "14.5px", right: "55px", zIndex: 1000 }}>
+      {colorScheme === "light" ? <IconMoonFilled color="#009bf5" size={16} /> : <IconSunFilled color="orange" size={16} />}
+    </ActionIcon>
   );
 }
 
@@ -389,11 +389,11 @@ function App() {
         color: "teal",
       });
       const toastId = toast.custom(
-          <Button variant="default" onClick={() => { toast.remove(toastId); handleTrigger() }}>
-            <IconArrowBackUp size={16} /> 
-            <Space w="md" />
-            Undo
-          </Button>
+        <Button variant="default" onClick={() => { toast.remove(toastId); handleTrigger() }}>
+          <IconArrowBackUp size={16} />
+          <Space w="md" />
+          Undo
+        </Button>
       )
     } catch (error) {
       notifications.show({
@@ -502,7 +502,7 @@ function App() {
               >
                 <List.Item key={quote.id}>
                   <Box>
-                    <Menu withinPortal position="bottom-start" withArrow>
+                    <Menu withinPortal position="right" withArrow>
                       <Menu.Target>
                         <div>
                           <em>{quote.description} </em>
@@ -513,14 +513,14 @@ function App() {
                       </Menu.Target>
                       <Menu.Dropdown>
                         <Menu.Item onClick={() => handleEditQuote(item, quote)}>
-                          Edit Quote
+                          <IconEdit size={16} />
                         </Menu.Item>
                         <Menu.Item
                           onClick={() => toggleFavorite(quote.id, item.title, quote.description, quote.pageNo)}>
-                          {favorites.some((item) => item.quoteId === quote.id) ? "Delete from favorites" : "Add to favorites"}
+                          {favorites.some((item) => item.quoteId === quote.id) ? <IconHeartFilled color="rgba(255, 0, 43, 0.7)" size={16} /> : <IconHeart size={16} />}
                         </Menu.Item>
                         <Menu.Item onClick={() => handleDeleteQuote(item.id, quote.id)}>
-                          Delete
+                          <IconTrash size={16} />
                         </Menu.Item>
                       </Menu.Dropdown>
                     </Menu>
@@ -705,14 +705,13 @@ function App() {
               <Menu.Item icon={<IconLogin2 size={16} />} onClick={open_auth} disabled>
                 Sign In / Register
               </Menu.Item>
-              <ThemeSwitcher />
             </Menu.Dropdown>
           </Menu>
         </Box>
 
         {/* Search Bar */}
         <Container>
-          <ActionIcon variant="default" radius="xl" size={39} onClick={spotlight.open} style={{ position: "absolute", top: "14.5px", right: "55px", zIndex: 1000 }}>
+          <ActionIcon variant="default" radius="xl" size={39} onClick={spotlight.open} style={{ position: "absolute", top: "14.5px", right: "100px", zIndex: 1000 }}>
             <IconSearch size={16} />
           </ActionIcon>
           <Spotlight
@@ -728,6 +727,8 @@ function App() {
             radius={"lg"}
           />
         </Container>
+
+        <ThemeSwitcher />
 
         <AuthenticationForm opened={openAuthentication} onClose={close_auth} />
         <Notifications position="top-right" zIndex={1000} radius={"lg"} />

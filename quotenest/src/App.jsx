@@ -33,7 +33,8 @@ import {
   ThemeIcon,
   Affix,
   Transition,
-  Group
+  Group,
+  Grid
 } from "@mantine/core";
 import { ModalsProvider, modals } from '@mantine/modals';
 import { Spotlight, spotlight } from '@mantine/spotlight';
@@ -413,6 +414,26 @@ function App() {
     }
   }
 
+  const openDeleteModalForQuote = (bookId, quoteId) =>
+    modals.openConfirmModal({
+      title: 'Remove quote from Collection',
+      centered: true,
+      children: (
+        <Text size="sm" fw={500}>
+          Are you sure you want to delete this quote? <br />
+          There is no way to recover it once it's deleted.
+        </Text>
+      ),
+      labels: { confirm: 'Delete quote', cancel: "No, don't delete it" },
+      confirmProps: { color: 'red' },
+      onCancel: () => notifications.show({
+        title: "Deletion canceled.",
+        message: "Quote deletion canceled. The quote remains in your book.",
+        autoClose: 2000,
+      }),
+      onConfirm: () => handleDeleteQuote(bookId, quoteId),
+    });
+
   const handleDeleteQuote = (bookId, quoteId) => {
     setLists((prevLists) => prevLists.map((list) =>
       list.id === bookId ? { ...list, quotes: list.quotes.filter((quote) => quote.id !== quoteId) } : list
@@ -503,7 +524,6 @@ function App() {
                   padding: "12px"
                 }}
               >
-
                 <div>
                   <ThemeIcon size={16} radius={"xl"} color="teal" variant="light" style={{ marginRight: "4px" }}>
                     <IconQuoteFilled size={12} />
@@ -522,7 +542,7 @@ function App() {
                     onClick={() => toggleFavorite(quote.id, item.title, quote.description, quote.pageNo)}>
                     {favorites.some((item) => item.quoteId === quote.id) ? <IconHeartFilled color="rgba(255, 0, 43, 0.7)" size={16} /> : <IconHeart size={16} />}
                   </ActionIcon>
-                  <ActionIcon variant="default" onClick={() => handleDeleteQuote(item.id, quote.id)} >
+                  <ActionIcon variant="default" onClick={() => openDeleteModalForQuote(item.id, quote.id)} >
                     <IconTrash size={16} />
                   </ActionIcon>
                 </Group>
@@ -550,6 +570,7 @@ function App() {
               data={titles}
               onChange={setTitle}
               required
+              rightSection={title.length > 0 && <ActionIcon variant="transparent" radius={"xl"} color="gray" onClick={() => setTitle("")}> <IconX size={16} /> </ActionIcon>}
             />
           </form>
         </Container>

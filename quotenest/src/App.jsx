@@ -32,7 +32,8 @@ import {
   ActionIcon,
   ThemeIcon,
   Affix,
-  Transition
+  Transition,
+  Group
 } from "@mantine/core";
 import { ModalsProvider, modals } from '@mantine/modals';
 import { Spotlight, spotlight } from '@mantine/spotlight';
@@ -489,43 +490,42 @@ function App() {
           )}
         </Draggable>
         <Accordion.Panel>
-          <List type="ordered" spacing="sm" icon={
-            <ThemeIcon size={24} radius={"xl"} color="teal" variant="light">
-              <IconQuoteFilled size={16} />
-            </ThemeIcon>}>
+          <List type="ordered" spacing="sm">
             {item.quotes.map((quote) => (
               <Card
                 key={quote.id}
                 withBorder shadow="lg"
                 radius="lg"
-                style={{ marginBottom: "10px" }}
+                style={{
+                  marginBottom: "10px",
+                  display: "flex",
+                  flexDirection: "column",
+                  padding: "12px"
+                }}
               >
-                <List.Item key={quote.id}>
-                  <Box>
-                    <Menu withinPortal position="right" withArrow>
-                      <Menu.Target>
-                        <div>
-                          <em>{quote.description} </em>
-                          <span style={{ fontStyle: "italic", color: "#888" }}>
-                            — p. {quote.pageNo}
-                          </span>
-                        </div>
-                      </Menu.Target>
-                      <Menu.Dropdown>
-                        <Menu.Item onClick={() => handleEditQuote(item, quote)}>
-                          <IconEdit size={16} />
-                        </Menu.Item>
-                        <Menu.Item
-                          onClick={() => toggleFavorite(quote.id, item.title, quote.description, quote.pageNo)}>
-                          {favorites.some((item) => item.quoteId === quote.id) ? <IconHeartFilled color="rgba(255, 0, 43, 0.7)" size={16} /> : <IconHeart size={16} />}
-                        </Menu.Item>
-                        <Menu.Item onClick={() => handleDeleteQuote(item.id, quote.id)}>
-                          <IconTrash size={16} />
-                        </Menu.Item>
-                      </Menu.Dropdown>
-                    </Menu>
-                  </Box>
-                </List.Item>
+
+                <div>
+                  <ThemeIcon size={16} radius={"xl"} color="teal" variant="light" style={{ marginRight: "4px" }}>
+                    <IconQuoteFilled size={12} />
+                  </ThemeIcon>
+                  <em>{quote.description} </em>
+                  <span style={{ fontStyle: "italic", color: "#888" }}>
+                    — p. {quote.pageNo}
+                  </span>
+                </div>
+
+                <Group align="center" gap="8px" style={{ marginTop: "auto", alignSelf: "flex-end" }}>
+                  <ActionIcon variant="default" onClick={() => handleEditQuote(item, quote)}>
+                    <IconEdit size={16} />
+                  </ActionIcon>
+                  <ActionIcon variant="default"
+                    onClick={() => toggleFavorite(quote.id, item.title, quote.description, quote.pageNo)}>
+                    {favorites.some((item) => item.quoteId === quote.id) ? <IconHeartFilled color="rgba(255, 0, 43, 0.7)" size={16} /> : <IconHeart size={16} />}
+                  </ActionIcon>
+                  <ActionIcon variant="default" onClick={() => handleDeleteQuote(item.id, quote.id)} >
+                    <IconTrash size={16} />
+                  </ActionIcon>
+                </Group>
               </Card>
             ))}
           </List>
@@ -666,7 +666,7 @@ function App() {
             ))}
           </List>
         </Drawer>
-        <Modal opened={openEditModal} onClose={close_edit} title="Enter description and page number">
+        <Drawer opened={openEditModal} onClose={close_edit} title="Enter description and page number" position="bottom">
           <Textarea
             radius={"md"}
             value={editTitle}
@@ -689,7 +689,7 @@ function App() {
           />
           <Space h="xs"></Space>
           <Center><Button onClick={handleSaveQuote}>Save Changes</Button></Center>
-        </Modal>
+        </Drawer>
 
         {/* User menu */}
         <Box style={{ position: "absolute", top: "15px", right: "10px", zIndex: 1000 }}>

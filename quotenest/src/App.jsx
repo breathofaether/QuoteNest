@@ -19,7 +19,6 @@ import {
   rem,
   Box,
   NumberInput,
-  Modal,
   Textarea,
   HoverCard,
   Text,
@@ -33,8 +32,10 @@ import {
   ThemeIcon,
   Affix,
   Transition,
-  Group,
-  Grid
+  CopyButton,
+  Tooltip,
+  Flex,
+  Divider
 } from "@mantine/core";
 import { ModalsProvider, modals } from '@mantine/modals';
 import { Spotlight, spotlight } from '@mantine/spotlight';
@@ -43,7 +44,7 @@ import { useDebouncedValue, useDisclosure, useClipboard } from "@mantine/hooks";
 import { notifications, Notifications } from '@mantine/notifications';
 import { toast, Toaster } from 'react-hot-toast';
 
-import { IconTrashFilled, IconX, IconCheck, IconLogin2, IconSearch, IconCopyCheck, IconQuoteFilled, IconQuotes, IconArrowUp, IconCirclePlusFilled, IconHeart, IconPencilCheck, IconArrowBackUp, IconMoonFilled, IconSunFilled, IconEdit, IconHeartFilled, IconTrash, } from '@tabler/icons-react'
+import { IconTrashFilled, IconX, IconCheck, IconLogin2, IconSearch, IconCopyCheck, IconQuoteFilled, IconQuotes, IconArrowUp, IconCirclePlusFilled, IconHeart, IconPencilCheck, IconArrowBackUp, IconMoonFilled, IconSunFilled, IconEdit, IconHeartFilled, IconTrash, IconCopy, } from '@tabler/icons-react'
 import { DragDropContext, Draggable, Droppable } from '@hello-pangea/dnd';
 import { AuthenticationForm } from "./auth/AuthenticationForm";
 
@@ -533,19 +534,35 @@ function App() {
                     — p. {quote.pageNo}
                   </span>
                 </div>
-
-                <Group align="center" gap="8px" style={{ marginTop: "auto", alignSelf: "flex-end" }}>
-                  <ActionIcon variant="default" onClick={() => handleEditQuote(item, quote)}>
+                <Divider my="xs" />
+                {/* edit button */}
+                <Flex align="center" justify="space-between" w="100%">
+                  <ActionIcon variant="subtle" color="#424040" onClick={() => handleEditQuote(item, quote)}>
                     <IconEdit size={16} />
                   </ActionIcon>
-                  <ActionIcon variant="default"
+
+                  {/* like button */}
+                  <ActionIcon variant="subtle" color="#424040"
                     onClick={() => toggleFavorite(quote.id, item.title, quote.description, quote.pageNo)}>
                     {favorites.some((item) => item.quoteId === quote.id) ? <IconHeartFilled color="rgba(255, 0, 43, 0.7)" size={16} /> : <IconHeart size={16} />}
                   </ActionIcon>
-                  <ActionIcon variant="default" onClick={() => openDeleteModalForQuote(item.id, quote.id)} >
+
+                  {/* copy button} */}
+                  <CopyButton value={quote.description} timeout={2000}>
+                    {({ copied, copy }) => (
+                      <Tooltip label={copied ? 'Copied' : 'Copy'} withArrow position="right">
+                        <ActionIcon color={copied ? 'teal' : '#424040'} variant="subtle" onClick={copy}>
+                          {copied ? <IconCheck size={16} /> : <IconCopy size={16} />}
+                        </ActionIcon>
+                      </Tooltip>
+                    )}
+                  </CopyButton>
+
+                  {/* delete button */}
+                  <ActionIcon variant="subtle" color="#424040" onClick={() => openDeleteModalForQuote(item.id, quote.id)} >
                     <IconTrash size={16} />
                   </ActionIcon>
-                </Group>
+                </Flex>
               </Card>
             ))}
           </List>
@@ -657,6 +674,7 @@ function App() {
           onClose={close_fav}
           transitionProps={{ transition: 'fade', duration: 200 }}
         >
+          <Center><Drawer.Title><em>Favorites</em></Drawer.Title></Center>
           <Space h="lg"></Space>
           <List type="ordered" spacing="sm">
             {favorites.map((item) => (
@@ -760,6 +778,7 @@ function App() {
                 leftSection={<IconArrowUp size={16} />}
                 style={transitionStyles}
                 onClick={() => scrollTo({ y: 0 })}
+                color="gray"
               >
                 Scroll to top
               </Button>

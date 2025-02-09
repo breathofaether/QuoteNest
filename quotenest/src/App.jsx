@@ -529,20 +529,23 @@ function App() {
                   <ThemeIcon size={16} radius={"xl"} color="teal" variant="light" style={{ marginRight: "4px" }}>
                     <IconQuoteFilled size={12} />
                   </ThemeIcon>
+                  
+                  {/* Quote */}
                   <em>{quote.description} </em>
                   <span style={{ fontStyle: "italic", color: "#888" }}>
                     — p. {quote.pageNo}
                   </span>
                 </div>
+               
                 <Divider my="xs" />
                 {/* edit button */}
                 <Flex align="center" justify="space-between" w="100%">
-                  <ActionIcon variant="subtle" color="#424040" onClick={() => handleEditQuote(item, quote)}>
+                  <ActionIcon variant="subtle" color="black" onClick={() => handleEditQuote(item, quote)}>
                     <IconEdit size={16} />
                   </ActionIcon>
 
                   {/* like button */}
-                  <ActionIcon variant="subtle" color="#424040"
+                  <ActionIcon variant="subtle" color="black"
                     onClick={() => toggleFavorite(quote.id, item.title, quote.description, quote.pageNo)}>
                     {favorites.some((item) => item.quoteId === quote.id) ? <IconHeartFilled color="rgba(255, 0, 43, 0.7)" size={16} /> : <IconHeart size={16} />}
                   </ActionIcon>
@@ -551,7 +554,7 @@ function App() {
                   <CopyButton value={quote.description} timeout={2000}>
                     {({ copied, copy }) => (
                       <Tooltip label={copied ? 'Copied' : 'Copy'} withArrow position="right">
-                        <ActionIcon color={copied ? 'teal' : '#424040'} variant="subtle" onClick={copy}>
+                        <ActionIcon color={copied ? 'teal' : 'black'} variant="subtle" onClick={copy}>
                           {copied ? <IconCheck size={16} /> : <IconCopy size={16} />}
                         </ActionIcon>
                       </Tooltip>
@@ -559,7 +562,7 @@ function App() {
                   </CopyButton>
 
                   {/* delete button */}
-                  <ActionIcon variant="subtle" color="#424040" onClick={() => openDeleteModalForQuote(item.id, quote.id)} >
+                  <ActionIcon variant="subtle" color="black" onClick={() => openDeleteModalForQuote(item.id, quote.id)} >
                     <IconTrash size={16} />
                   </ActionIcon>
                 </Flex>

@@ -540,12 +540,12 @@ function App() {
                 <Divider my="xs" />
                 {/* edit button */}
                 <Flex align="center" justify="space-between" w="100%">
-                  <ActionIcon variant="subtle" color="black" onClick={() => handleEditQuote(item, quote)}>
+                  <ActionIcon variant="subtle" color="#706d6d" onClick={() => handleEditQuote(item, quote)}>
                     <IconEdit size={16} />
                   </ActionIcon>
 
                   {/* like button */}
-                  <ActionIcon variant="subtle" color="black"
+                  <ActionIcon variant="subtle" color="#706d6d"
                     onClick={() => toggleFavorite(quote.id, item.title, quote.description, quote.pageNo)}>
                     {favorites.some((item) => item.quoteId === quote.id) ? <IconHeartFilled color="rgba(255, 0, 43, 0.7)" size={16} /> : <IconHeart size={16} />}
                   </ActionIcon>
@@ -554,7 +554,7 @@ function App() {
                   <CopyButton value={quote.description} timeout={2000}>
                     {({ copied, copy }) => (
                       <Tooltip label={copied ? 'Copied' : 'Copy'} withArrow position="right">
-                        <ActionIcon color={copied ? 'teal' : 'black'} variant="subtle" onClick={copy}>
+                        <ActionIcon color={copied ? 'teal' : '#706d6d'} variant="subtle" onClick={copy}>
                           {copied ? <IconCheck size={16} /> : <IconCopy size={16} />}
                         </ActionIcon>
                       </Tooltip>
@@ -562,7 +562,7 @@ function App() {
                   </CopyButton>
 
                   {/* delete button */}
-                  <ActionIcon variant="subtle" color="black" onClick={() => openDeleteModalForQuote(item.id, quote.id)} >
+                  <ActionIcon variant="subtle" color="#706d6d" onClick={() => openDeleteModalForQuote(item.id, quote.id)} >
                     <IconTrash size={16} />
                   </ActionIcon>
                 </Flex>

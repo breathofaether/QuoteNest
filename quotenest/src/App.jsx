@@ -548,8 +548,8 @@ function App() {
       if (docSnap.exists()) {
         const cloudData = docSnap.data();
 
-        setLists(cloudData.lists || [...lists]);
-        setFavorites(cloudData.favorites || [...favorites]);
+        setLists([...lists, cloudData.lists]);
+        setFavorites([...favorites, cloudData.favorites]);
 
         notifications.show({
           title: "Backup Restored",

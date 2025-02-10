@@ -865,7 +865,7 @@ function App() {
                   Log out
                 </Menu.Item>
               ) : (
-                <Menu.Item icon={<IconLogin2 size={16} />} onClick={open_auth}>
+                <Menu.Item icon={<IconLogin2 size={16} />} onClick={open_auth} disabled>
                   Sign In / Register
                 </Menu.Item>
               )}

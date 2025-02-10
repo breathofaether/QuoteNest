@@ -44,9 +44,12 @@ import { useDebouncedValue, useDisclosure, useClipboard } from "@mantine/hooks";
 import { notifications, Notifications } from '@mantine/notifications';
 import { toast, Toaster } from 'react-hot-toast';
 
-import { IconTrashFilled, IconX, IconCheck, IconLogin2, IconSearch, IconCopyCheck, IconQuoteFilled, IconQuotes, IconArrowUp, IconCirclePlusFilled, IconHeart, IconPencilCheck, IconArrowBackUp, IconMoonFilled, IconSunFilled, IconEdit, IconHeartFilled, IconTrash, IconCopy, } from '@tabler/icons-react'
+import { IconTrashFilled, IconX, IconCheck, IconLogin2, IconSearch, IconCopyCheck, IconQuoteFilled, IconQuotes, IconArrowUp, IconCirclePlusFilled, IconHeart, IconPencilCheck, IconArrowBackUp, IconMoonFilled, IconSunFilled, IconEdit, IconHeartFilled, IconTrash, IconCopy, IconLogout, IconCloudUp, } from '@tabler/icons-react'
 import { DragDropContext, Draggable, Droppable } from '@hello-pangea/dnd';
 import { AuthenticationForm } from "./auth/AuthenticationForm";
+import { getAuth, signOut } from "firebase/auth";
+import { db } from "./auth/firebaseConfig";
+import { doc, getDoc, setDoc } from "firebase/firestore";
 
 
 function ThemeSwitcher() {
@@ -138,7 +141,7 @@ const theme = createTheme({
 
 });
 
-
+const auth = getAuth()
 
 function App() {
   const [lists, setLists] = useState(() => {
@@ -193,9 +196,12 @@ function App() {
   useEffect(() => {
     localStorage.setItem("lists", JSON.stringify(state))
     setLists(state)
+    setSync(true)
   }, [state])
+
   useEffect(() => {
     localStorage.setItem("fav_lists", JSON.stringify(favorites))
+    setSync(true)
   }, [favorites])
 
   {/* Theme */ }
@@ -203,6 +209,35 @@ function App() {
 
   {/* Affix */ }
   const [scroll, scrollTo] = useWindowScroll()
+
+  {/* User details */ }
+  const [user, setUser] = useState(null)
+  useEffect(() => {
+    const unsubscribe = auth.onAuthStateChanged((user) => {
+      setUser(user)
+    })
+
+    return () => unsubscribe();
+  }, [])
+
+  {/* Cloud sync */ }
+  const [loading, setLoading] = useState(null);
+  const [sync, setSync] = useState(null)
+  useEffect(() => {
+    if (user) {
+      fetchCloudBackup()
+    }
+  }, [user])
+
+  const handleLogout = async () => {
+    await signOut(auth)
+    notifications.show({
+      title: "Log out successfull",
+      message: "You are now logged out!",
+      autoClose: 2000,
+      color: "teal"
+    })
+  }
 
   const handleAdd = () => {
     if (title.trim() === "" || text.trim() === "") return;
@@ -462,6 +497,87 @@ function App() {
     })
   }
 
+  const handleCloudUpload = async () => {
+    if (!user) return;
+    setLoading(true)
+
+    if (!sync) {
+      notifications.show(
+        {
+          message: "Your data is already up to date.",
+          autoClose: 2000,
+          color: "blue",
+        })
+      return
+    }
+
+    try {
+      const userDocRef = doc(db, "users", user.uid);
+
+      const dataToUpload = {
+        lists,
+        favorites,
+        timestamp: new Date().toISOString(),
+      }
+
+      await setDoc(userDocRef, dataToUpload);
+
+      setSync(false)
+      setLoading(false)
+      return;
+
+    } catch (error) {
+      notifications.show({
+        title: "Upload Failed",
+        message: "Something went wrong. Please try again.",
+        autoClose: 3000,
+        color: "red",
+      });
+    }
+  }
+
+
+
+  const fetchCloudBackup = async () => {
+    if (!user) return;
+
+    try {
+      const userDocRef = doc(db, "users", user.uid);
+      const docSnap = await getDoc(userDocRef);
+
+      if (docSnap.exists()) {
+        const cloudData = docSnap.data();
+
+        setLists(cloudData.lists || []);
+        setFavorites(cloudData.favorites || []);
+
+        notifications.show({
+          title: "Backup Restored",
+          message: "Your cloud data has been successfully restored.",
+          autoClose: 3000,
+          color: "green",
+        });
+
+      } else {
+        notifications.show({
+          title: "No Backup Found",
+          message: "There is no backup available for your account.",
+          autoClose: 3000,
+          color: "blue",
+        });
+      }
+    } catch (error) {
+      notifications.show({
+        title: "Restore Failed",
+        message: "Something went wrong. Please try again.",
+        autoClose: 3000,
+        color: "red",
+      });
+    }
+  };
+
+
+
   {/* List mapping */ }
   const items = state.map((item, index) => (
     <Container size={"lg"} key={item.id}>
@@ -529,14 +645,14 @@ function App() {
                   <ThemeIcon size={16} radius={"xl"} color="teal" variant="light" style={{ marginRight: "4px" }}>
                     <IconQuoteFilled size={12} />
                   </ThemeIcon>
-                  
+
                   {/* Quote */}
                   <em>{quote.description} </em>
                   <span style={{ fontStyle: "italic", color: "#888" }}>
                     — p. {quote.pageNo}
                   </span>
                 </div>
-               
+
                 <Divider my="xs" />
                 {/* edit button */}
                 <Flex align="center" justify="space-between" w="100%">
@@ -744,9 +860,15 @@ function App() {
               />
             </Menu.Target>
             <Menu.Dropdown>
-              <Menu.Item icon={<IconLogin2 size={16} />} onClick={open_auth} disabled>
-                Sign In / Register
-              </Menu.Item>
+              {user ? (
+                <Menu.Item icon={<IconLogout size={16} />} onClick={handleLogout}>
+                  Log out
+                </Menu.Item>
+              ) : (
+                <Menu.Item icon={<IconLogin2 size={16} />} onClick={open_auth}>
+                  Sign In / Register
+                </Menu.Item>
+              )}
             </Menu.Dropdown>
           </Menu>
         </Box>
@@ -756,6 +878,17 @@ function App() {
           <ActionIcon variant="default" radius="xl" size={39} onClick={spotlight.open} style={{ position: "absolute", top: "14.5px", right: "100px", zIndex: 1000 }}>
             <IconSearch size={16} />
           </ActionIcon>
+
+          {/* Cloud Backup */}
+          {user && (
+            < ActionIcon variant="default" radius="xl" size={39} style={{ position: "absolute", top: "14.5px", right: "145px", zIndex: 1000 }}
+              onClick={handleCloudUpload}
+              loading={loading}
+            >
+              <IconCloudUp size={16} />
+            </ActionIcon>
+          )}
+
           <Spotlight
             actions={list_items}
             nothingFound="Nothing found..."
@@ -790,7 +923,7 @@ function App() {
         </Affix>
         <Toaster position="bottom-center" />
       </ModalsProvider>
-    </MantineProvider>
+    </MantineProvider >
   )
 }
 

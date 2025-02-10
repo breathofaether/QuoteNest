@@ -522,6 +522,13 @@ function App() {
 
       await setDoc(userDocRef, dataToUpload);
 
+      notifications.show({
+        title: "Backup Completed",
+        message: "Your cloud data has been successfully uploaded.",
+        autoClose: 2000,
+        color: "green",
+      });
+
       setSync(false)
       setLoading(false)
       return;
@@ -548,13 +555,23 @@ function App() {
       if (docSnap.exists()) {
         const cloudData = docSnap.data();
 
-        setLists([...lists, cloudData.lists]);
-        setFavorites([...favorites, cloudData.favorites]);
+        const mergedLists = [
+          ...lists,
+          ...cloudData.lists.filter(cloudItem => !lists.some(localItem => localItem.id === cloudItem.id))
+        ];
+
+        const mergedFavorites = [
+          ...lists,
+          ...cloudData.favorites.filter(cloudItem => !favorites.some(localItem => localItem.id === cloudItem.id))
+        ];
+
+        setLists(mergedLists);
+        setFavorites(mergedFavorites);
 
         notifications.show({
           title: "Backup Restored",
           message: "Your cloud data has been successfully restored.",
-          autoClose: 3000,
+          autoClose: 2000,
           color: "green",
         });
 
@@ -865,7 +882,7 @@ function App() {
                   Log out
                 </Menu.Item>
               ) : (
-                <Menu.Item icon={<IconLogin2 size={16} />} onClick={open_auth} disabled>
+                <Menu.Item icon={<IconLogin2 size={16} />} onClick={open_auth}>
                   Sign In / Register
                 </Menu.Item>
               )}

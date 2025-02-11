@@ -35,7 +35,9 @@ import {
   CopyButton,
   Tooltip,
   Flex,
-  Divider
+  Divider,
+  Spoiler,
+  ScrollArea
 } from "@mantine/core";
 import { ModalsProvider, modals } from '@mantine/modals';
 import { Spotlight, spotlight } from '@mantine/spotlight';
@@ -228,6 +230,7 @@ function App() {
       fetchCloudBackup()
     }
   }, [user])
+
 
   const handleLogout = async () => {
     await signOut(auth)
@@ -555,18 +558,8 @@ function App() {
       if (docSnap.exists()) {
         const cloudData = docSnap.data();
 
-        const mergedLists = [
-          ...lists,
-          ...cloudData.lists.filter(cloudItem => !lists.some(localItem => localItem.id === cloudItem.id))
-        ];
-
-        const mergedFavorites = [
-          ...lists,
-          ...cloudData.favorites.filter(cloudItem => !favorites.some(localItem => localItem.id === cloudItem.id))
-        ];
-
-        setLists(mergedLists);
-        setFavorites(mergedFavorites);
+        setLists(cloudData.lists || []);
+        setFavorites(cloudData.lists || []);
 
         notifications.show({
           title: "Backup Restored",
@@ -597,7 +590,7 @@ function App() {
 
   {/* List mapping */ }
   const items = state.map((item, index) => (
-    <Container size={"lg"} key={item.id}>
+    <Container size={"xxl"} key={item.id}>
       <Accordion.Item key={item.id} value={item.title}>
         <Draggable key={item.id} index={index} type={item.id} draggableId={item.title}>
           {(provided, snapshot) => (
@@ -662,7 +655,6 @@ function App() {
                   <ThemeIcon size={16} radius={"xl"} color="teal" variant="light" style={{ marginRight: "4px" }}>
                     <IconQuoteFilled size={12} />
                   </ThemeIcon>
-
                   {/* Quote */}
                   <em>{quote.description} </em>
                   <span style={{ fontStyle: "italic", color: "#888" }}>

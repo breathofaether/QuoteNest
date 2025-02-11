@@ -590,7 +590,7 @@ function App() {
 
   {/* List mapping */ }
   const items = state.map((item, index) => (
-    <Container size={"xxl"} key={item.id}>
+    <Container size={"xl"} key={item.id}>
       <Accordion.Item key={item.id} value={item.title}>
         <Draggable key={item.id} index={index} type={item.id} draggableId={item.title}>
           {(provided, snapshot) => (

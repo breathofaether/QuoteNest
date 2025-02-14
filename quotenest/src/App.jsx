@@ -36,8 +36,7 @@ import {
   Tooltip,
   Flex,
   Divider,
-  Spoiler,
-  ScrollArea
+ 
 } from "@mantine/core";
 import { ModalsProvider, modals } from '@mantine/modals';
 import { Spotlight, spotlight } from '@mantine/spotlight';
@@ -225,6 +224,7 @@ function App() {
   {/* Cloud sync */ }
   const [loading, setLoading] = useState(null);
   const [sync, setSync] = useState(null)
+  const [localBackup, setLocalBackup] = useState(null);
   useEffect(() => {
     if (user) {
       fetchCloudBackup()
@@ -234,6 +234,12 @@ function App() {
 
   const handleLogout = async () => {
     await signOut(auth)
+
+    if (localBackup) {
+      setLists(localBackup.lists);
+      setFavorites(localBackup.favorites);
+  }
+
     notifications.show({
       title: "Log out successfull",
       message: "You are now logged out!",
@@ -362,7 +368,7 @@ function App() {
         title: bookTitle,
         quoteId: quoteId,
         quoteDescription: quoteDescription,
-        pageNo: quotePageNo,
+        pageNo: quotePageNo || " N/A",
       }
       setFavorites([...favorites, updatedLists])
       notifications.show({
@@ -552,6 +558,8 @@ function App() {
     if (!user) return;
 
     try {
+      setLocalBackup({ lists, favorites });
+
       const userDocRef = doc(db, "users", user.uid);
       const docSnap = await getDoc(userDocRef);
 
@@ -874,7 +882,7 @@ function App() {
                   Log out
                 </Menu.Item>
               ) : (
-                <Menu.Item icon={<IconLogin2 size={16} />} onClick={open_auth} disabled>
+                <Menu.Item icon={<IconLogin2 size={16} />} onClick={open_auth} >
                   Sign In / Register
                 </Menu.Item>
               )}

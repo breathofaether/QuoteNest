@@ -36,7 +36,7 @@ import {
   Tooltip,
   Flex,
   Divider,
- 
+
 } from "@mantine/core";
 import { ModalsProvider, modals } from '@mantine/modals';
 import { Spotlight, spotlight } from '@mantine/spotlight';
@@ -45,7 +45,7 @@ import { useDebouncedValue, useDisclosure, useClipboard } from "@mantine/hooks";
 import { notifications, Notifications } from '@mantine/notifications';
 import { toast, Toaster } from 'react-hot-toast';
 
-import { IconTrashFilled, IconX, IconCheck, IconLogin2, IconSearch, IconCopyCheck, IconQuoteFilled, IconQuotes, IconArrowUp, IconCirclePlusFilled, IconHeart, IconPencilCheck, IconArrowBackUp, IconMoonFilled, IconSunFilled, IconEdit, IconHeartFilled, IconTrash, IconCopy, IconLogout, IconCloudUp, } from '@tabler/icons-react'
+import { IconTrashFilled, IconX, IconCheck, IconLogin2, IconSearch, IconCopyCheck, IconQuoteFilled, IconQuotes, IconArrowUp, IconCirclePlusFilled, IconHeart, IconPencilCheck, IconArrowBackUp, IconMoonFilled, IconSunFilled, IconEdit, IconHeartFilled, IconTrash, IconCopy, IconLogout, IconCloudUp, IconMessageExclamation, } from '@tabler/icons-react'
 import { DragDropContext, Draggable, Droppable } from '@hello-pangea/dnd';
 import { AuthenticationForm } from "./auth/AuthenticationForm";
 import { getAuth, signOut } from "firebase/auth";
@@ -153,6 +153,8 @@ function App() {
     const storedLists = localStorage.getItem("fav_lists");
     return storedLists ? JSON.parse(storedLists) : []
   })
+  const [counter, setCounter] = useState(0)
+  const [warningCounter, setWarningCounter] = useState(0)
   const [title, setTitle] = useState("")
   const [text, setText] = useState("")
   const [pageNo, setPageNo] = useState("")
@@ -197,12 +199,16 @@ function App() {
   useEffect(() => {
     localStorage.setItem("lists", JSON.stringify(state))
     setLists(state)
-    setSync(true)
+    if (!user && counter === 0){
+      open_auth()
+      setCounter(counter+1)
+    } 
+    handleCloudUpload()
   }, [state])
 
   useEffect(() => {
     localStorage.setItem("fav_lists", JSON.stringify(favorites))
-    setSync(true)
+    handleCloudUpload()
   }, [favorites])
 
   {/* Theme */ }
@@ -217,29 +223,33 @@ function App() {
     const unsubscribe = auth.onAuthStateChanged((user) => {
       setUser(user)
     })
-
+    
     return () => unsubscribe();
   }, [])
 
   {/* Cloud sync */ }
   const [loading, setLoading] = useState(null);
-  const [sync, setSync] = useState(null)
-  const [localBackup, setLocalBackup] = useState(null);
   useEffect(() => {
     if (user) {
       fetchCloudBackup()
+      if (user && warningCounter === 0) {
+        notifications.show({
+          title: "Cloud Sync Enabled",
+          message: "All changes made to your cloud account will automatically sync with your local storage and vice versa. This allows seamless access to your data across devices.",
+          autoClose: 5000,
+          icon: <IconMessageExclamation size={16} />,
+          color: "red",
+        });
+        setWarningCounter(counter+1)
+      }
     }
   }, [user])
 
 
   const handleLogout = async () => {
     await signOut(auth)
-
-    if (localBackup) {
-      setLists(localBackup.lists);
-      setFavorites(localBackup.favorites);
-  }
-
+    setCounter(0)
+    setWarningCounter(0)
     notifications.show({
       title: "Log out successfull",
       message: "You are now logged out!",
@@ -510,16 +520,6 @@ function App() {
     if (!user) return;
     setLoading(true)
 
-    if (!sync) {
-      notifications.show(
-        {
-          message: "Your data is already up to date.",
-          autoClose: 2000,
-          color: "blue",
-        })
-      return
-    }
-
     try {
       const userDocRef = doc(db, "users", user.uid);
 
@@ -530,15 +530,6 @@ function App() {
       }
 
       await setDoc(userDocRef, dataToUpload);
-
-      notifications.show({
-        title: "Backup Completed",
-        message: "Your cloud data has been successfully uploaded.",
-        autoClose: 2000,
-        color: "green",
-      });
-
-      setSync(false)
       setLoading(false)
       return;
 
@@ -558,7 +549,6 @@ function App() {
     if (!user) return;
 
     try {
-      setLocalBackup({ lists, favorites });
 
       const userDocRef = doc(db, "users", user.uid);
       const docSnap = await getDoc(userDocRef);
@@ -566,15 +556,18 @@ function App() {
       if (docSnap.exists()) {
         const cloudData = docSnap.data();
 
-        setLists(cloudData.lists || []);
-        setFavorites(cloudData.lists || []);
+        const mergedLists = [
+          ...lists,
+          ...cloudData.lists.filter(cloudItem => !lists.some(localItem => localItem.id === cloudItem.id || localItem.title === cloudItem.title))
+        ];
 
-        notifications.show({
-          title: "Backup Restored",
-          message: "Your cloud data has been successfully restored.",
-          autoClose: 2000,
-          color: "green",
-        });
+        const mergedFavorites = [
+          ...favorites,
+          ...cloudData.favorites.filter(cloudItem => !favorites.some(localItem => localItem.id === cloudItem.id || localItem.title || cloudItem.title))
+        ];
+
+        setLists(mergedLists);
+        setFavorites(mergedFavorites);
 
       } else {
         notifications.show({
@@ -882,7 +875,7 @@ function App() {
                   Log out
                 </Menu.Item>
               ) : (
-                <Menu.Item icon={<IconLogin2 size={16} />} onClick={open_auth} disabled>
+                <Menu.Item icon={<IconLogin2 size={16} />} onClick={open_auth}>
                   Sign In / Register
                 </Menu.Item>
               )}
@@ -901,6 +894,7 @@ function App() {
             < ActionIcon variant="default" radius="xl" size={39} style={{ position: "absolute", top: "14.5px", right: "145px", zIndex: 1000 }}
               onClick={handleCloudUpload}
               loading={loading}
+              disabled
             >
               <IconCloudUp size={16} />
             </ActionIcon>

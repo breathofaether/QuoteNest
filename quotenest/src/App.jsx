@@ -154,6 +154,7 @@ function App() {
     return storedLists ? JSON.parse(storedLists) : []
   })
   const [counter, setCounter] = useState(0)
+  const [uploadBackUpCounter, setUploadBackUpCounter] = useState(0)
   const [warningCounter, setWarningCounter] = useState(0)
   const [title, setTitle] = useState("")
   const [text, setText] = useState("")
@@ -199,10 +200,10 @@ function App() {
   useEffect(() => {
     localStorage.setItem("lists", JSON.stringify(state))
     setLists(state)
-    if (!user && counter === 0){
+    {/*  if (!user && counter === 0){
       open_auth()
       setCounter(counter+1)
-    } 
+    } */}
     handleCloudUpload()
   }, [state])
 
@@ -223,7 +224,7 @@ function App() {
     const unsubscribe = auth.onAuthStateChanged((user) => {
       setUser(user)
     })
-    
+
     return () => unsubscribe();
   }, [])
 
@@ -232,15 +233,19 @@ function App() {
   useEffect(() => {
     if (user) {
       fetchCloudBackup()
-      if (user && warningCounter === 0) {
+      if (warningCounter === 0) {
         notifications.show({
           title: "Cloud Sync Enabled",
-          message: "All changes made to your cloud account will automatically sync with your local storage and vice versa. This allows seamless access to your data across devices.",
+          message: "All changes made to your cloud account will automatically sync with your local storage. This allows seamless access to your data across devices.",
           autoClose: 5000,
           icon: <IconMessageExclamation size={16} />,
           color: "red",
         });
-        setWarningCounter(counter+1)
+        setWarningCounter(warningCounter + 1)
+      }
+      if (uploadBackUpCounter === 0) {
+        handleCloudUpload()
+        setUploadBackUpCounter(uploadBackUpCounter + 1)
       }
     }
   }, [user])
@@ -875,7 +880,7 @@ function App() {
                   Log out
                 </Menu.Item>
               ) : (
-                <Menu.Item icon={<IconLogin2 size={16} />} onClick={open_auth}>
+                <Menu.Item icon={<IconLogin2 size={16} />} onClick={open_auth} disabled>
                   Sign In / Register
                 </Menu.Item>
               )}

@@ -710,6 +710,8 @@ function App() {
       <ModalsProvider radius={"lg"}>
         <Space h="lg"></Space>
         <Text size="xl" fw={700} style={{ position: "relative", top: "0px", left: "10px", zIndex: 1000 }}>QuoteNest</Text>
+        <Divider my="xs" variant="dotted" />
+
         <Space h="md"></Space>
         <Container size={"sm"}>
           <form>

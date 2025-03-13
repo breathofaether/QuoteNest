@@ -662,7 +662,7 @@ function App() {
                     <IconQuoteFilled size={12} />
                   </ThemeIcon>
                   {/* Quote */}
-                  <em>{quote.description} </em>
+                  <em style={{whiteSpace: "pre-line"}}>{quote.description} </em>
                   <span style={{ fontStyle: "italic", color: "#888" }}>
                     — p. {quote.pageNo}
                   </span>
@@ -823,7 +823,7 @@ function App() {
                     <Menu withinPortal position="bottom-start" withArrow>
                       <Menu.Target>
                         <div>
-                          <em>{item.quoteDescription} </em>
+                          <em style={{ whiteSpace: "pre-line" }}>{item.quoteDescription} </em>
                           <span style={{ fontStyle: "italic", color: "#888" }}>
                             — {item.title}, p. {item.pageNo}
                           </span>
